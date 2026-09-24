@@ -348,10 +348,14 @@ function sendSnap(now){
 
 // ── Disegno classico ──
 const dcv = $('#dcv'), dctx = dcv.getContext('2d');
-function dResize(){ D.L = fitField(dcv, dctx, innerWidth, innerHeight, FW, FH, 50, 20, 20); }
+function dResize(){
+  D.lh = Math.round(Math.min(120, Math.max(70, innerHeight*.14)));
+  D.L = fitField(dcv, dctx, innerWidth, innerHeight, FW, FH, 14 + D.lh + 10, 20, 20);
+}
 function dDraw(now){
   const c = dctx, {s, ox, oy, w, h} = D.L, G = D.G, P = D.players;
   c.fillStyle = '#05070b'; c.fillRect(0, 0, w, h);
+  logoHud(c, w/2, 12, D.lh/.34, D.lh, now, `PRIMO A ${WIN}`);
   c.fillStyle = '#000'; c.fillRect(ox, oy, FW*s, FH*s);
   c.strokeStyle = '#2a3144'; c.lineWidth = 2; c.strokeRect(ox, oy, FW*s, FH*s);
   c.fillStyle = '#333'; for(let y = .02; y < FH; y += .06) c.fillRect(ox + FW/2*s - 2, oy + y*s, 4, .035*s);
@@ -490,7 +494,7 @@ function cResize(){
   ccv.width = w*dpr; ccv.height = h*dpr; cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const bar = document.querySelector('#ctrl .bar').getBoundingClientRect();
   const top = Math.max(44, bar.bottom + 4), gh = h*(1 - CTRL_FRAC);
-  const fs = Math.round(Math.min(w*.1, 40)), lh = Math.min(w*.34, gh*.22);
+  const fs = Math.round(Math.min(w*.1, 40)), lh = Math.min(w*.24, gh*.15);
   const fieldTop = top + lh + fs*1.25, m = 10;
   const pts = [raw(0,0,0), raw(FH,0,0), raw(0,0,FW), raw(FH,0,FW)];
   const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
@@ -520,28 +524,25 @@ function spaced(c, text, cx, y, ls){
   const ws = [...text].map(ch => c.measureText(ch).width), tot = ws.reduce((a, b) => a + b, 0) + ls*(text.length - 1);
   let x = cx - tot/2; c.textAlign = 'left'; [...text].forEach((ch, i) => { c.fillText(ch, x, y); x += ws[i] + ls; }); c.textAlign = 'center';
 }
-function logoHud(c, W, H, oy, now){
+function logoHud(c, cx, oy, W, H, now, label){
+  // logo PONG ARENA: cornice da visore e colori leggermente sdoppiati (niente disturbi)
   c.save(); c.translate(0, oy); c.textBaseline = 'middle'; c.textAlign = 'center';
   c.font = '100px "Michroma", sans-serif';
-  const sz = 100*W*.66/(c.measureText('PONG').width + 12*3), ls = sz*.12, y = H*.42;
+  const sz = 100*W*.66/(c.measureText('PONG').width + 12*3), ls = sz*.12, y = H*.42, off = Math.max(1, W*.004);
   c.font = `${sz}px "Michroma", sans-serif`;
-  const glitch = (now % 3000) < 140, off = glitch ? 5 : 1.6;
   c.save(); c.globalCompositeOperation = 'lighter';
-  c.fillStyle = 'rgba(255,77,141,.9)'; spaced(c, 'PONG', W/2 - off, y, ls);
-  c.fillStyle = 'rgba(63,240,255,.9)'; spaced(c, 'PONG', W/2 + off, y, ls);
+  c.fillStyle = 'rgba(255,77,141,.9)'; spaced(c, 'PONG', cx - off, y, ls);
+  c.fillStyle = 'rgba(63,240,255,.9)'; spaced(c, 'PONG', cx + off, y, ls);
   c.restore();
-  c.fillStyle = '#f2f6ff'; spaced(c, 'PONG', W/2, y, ls);
-  if(glitch){ const dpr = ccv.width/V.w;
-    for(let i = 0; i < 3; i++){ const by = oy + y - sz*.4 + Math.random()*sz*.8, bh = 3 + Math.random()*6, dx = (Math.random() - .5)*18;
-      c.drawImage(ccv, 0, by*dpr, ccv.width, bh*dpr, dx, by - oy, W, bh); } }
-  const fx = W*.08, fy = H*.08, fw = W*.84, fh = H*.66, L = 16;
+  c.fillStyle = '#f2f6ff'; spaced(c, 'PONG', cx, y, ls);
+  const fx = cx - W*.42, fy = H*.08, fw = W*.84, fh = H*.66, L = Math.max(10, W*.05);
   c.strokeStyle = '#3ff0ff'; c.lineWidth = 2; c.lineCap = 'square';
   for(const [x, y2, dx, dy] of [[fx, fy, 1, 1], [fx + fw, fy, -1, 1], [fx, fy + fh, 1, -1], [fx + fw, fy + fh, -1, -1]]){
     c.beginPath(); c.moveTo(x, y2 + dy*L); c.lineTo(x, y2); c.lineTo(x + dx*L, y2); c.stroke(); }
   const s2 = W*.045; c.font = `${s2}px "Michroma", sans-serif`; c.fillStyle = '#ff4d8d';
-  spaced(c, 'ARENA', W/2, fy + fh, s2*1.2);
-  c.font = `700 ${W*.03}px "Chakra Petch", monospace`; c.fillStyle = 'rgba(191,248,255,.75)'; c.textAlign = 'left';
-  c.fillText(`${NAME[C.side]} · PRIMO A ${WIN}`, fx, H*.94);
+  spaced(c, 'ARENA', cx, fy + fh, s2*1.2);
+  c.font = `700 ${Math.max(10, W*.03)}px "Chakra Petch", monospace`; c.fillStyle = 'rgba(191,248,255,.75)'; c.textAlign = 'left';
+  c.fillText(label, fx, H*.94);
   c.textAlign = 'right'; c.fillStyle = (now % 1000) < 600 ? '#ff4d8d' : 'rgba(255,77,141,.3)';
   c.fillText('● LIVE', fx + fw, H*.94);
   c.restore();
@@ -631,7 +632,7 @@ function cDraw(now){
   }
   c.restore();
   // logo e punteggio
-  logoHud(c, W, V.lh, V.top, now);
+  logoHud(c, W/2, V.top, V.lh/.34, V.lh, now, `${NAME[C.side]} · PRIMO A ${WIN}`);
   const fs = V.fs, gap = fs*.95, sy = V.top + V.lh + fs*.62;
   c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `700 ${fs}px "Chakra Petch", monospace`;
   c.fillStyle = COL[me]; c.fillText(S.sc[mi], W/2 - gap, sy);
