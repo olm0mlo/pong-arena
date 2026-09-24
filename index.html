@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<title>Pong Arena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Michroma&display=swap">
+<style>
+:root{--bg:#0b0d12;--panel:#141821;--panel2:#1b2030;--line:#2a3144;--text:#e8ecf4;--muted:#8b93a7;--L:#3ff0ff;--R:#ff4d8d;--ok:#39ff88}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior:none;overflow:hidden}
+.hidden{display:none!important}
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));overflow:auto}
+.card{width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;text-align:center}
+h1{font:800 34px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:4px;margin:0 0 6px;color:var(--ok)}
+h2{margin:0 0 8px;font-size:20px}
+.sub{color:var(--muted);margin:0 0 18px}
+button{font:inherit;cursor:pointer;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:12px 16px;width:100%}
+button:disabled{opacity:.6;cursor:default}
+button.primary{background:var(--ok);border-color:var(--ok);color:#04110a;font-weight:800}
+button.small{width:auto;padding:6px 12px;font-size:14px}
+.row{display:flex;gap:8px;margin-top:8px}
+input{font:700 24px ui-monospace,Menlo,monospace;letter-spacing:8px;text-transform:uppercase;text-align:center;width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0b0d12;color:var(--text)}
+.status{color:var(--muted);font-size:14px;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px}
+.spin{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--ok);border-radius:50%;animation:sp 1s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+a{color:var(--muted)}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.game{position:fixed;inset:0}
+.bar{position:absolute;top:calc(8px + env(safe-area-inset-top));left:10px;right:10px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);pointer-events:none;flex-wrap:wrap}
+.pill{background:rgba(20,24,33,.85);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar button{pointer-events:auto;margin-left:auto;background:rgba(20,24,33,.85)}
+.veil{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.66);padding:16px}
+.big{font:800 34px/1.1 ui-monospace,Menlo,monospace;margin:0 0 6px}
+.score{font:700 22px ui-monospace,monospace;color:var(--muted);margin-bottom:12px}
+
+/* ── Schermo PC ── */
+#lobby .card{width:min(760px,100%);display:grid;grid-template-columns:auto 1fr;gap:24px;text-align:left;align-items:center}
+#qr{background:#fff;border-radius:12px;padding:8px;line-height:0}
+#qr svg{width:230px;height:230px}
+#qrMissing{width:246px;height:246px;border:1px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:13px;padding:14px}
+.code{font:800 44px/1 ui-monospace,Menlo,monospace;letter-spacing:8px;color:var(--ok);margin:4px 0 8px}
+.link{font-size:13px;color:var(--muted);word-break:break-all;margin-bottom:12px}
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.slot{border:2px solid var(--line);border-radius:12px;padding:10px;min-height:96px}
+.slot b{display:block;font:800 14px ui-monospace,monospace;letter-spacing:2px;margin-bottom:4px}
+.slot.L b{color:var(--L)} .slot.R b{color:var(--R)}
+.slot.L.on{border-color:var(--L)} .slot.R.on{border-color:var(--R)}
+.slot .st{font-size:14px;margin-bottom:8px;display:flex;gap:6px;align-items:center}
+.slot .btns{display:flex;gap:6px;flex-wrap:wrap}
+.slot .btns button{width:auto;padding:4px 10px;font-size:13px}
+.warn{font-size:13px;color:#ffcf7a;background:#231c0c;border-radius:10px;padding:8px 10px;margin-top:10px}
+#lobbyTitle{font:800 28px/1 ui-monospace,monospace;letter-spacing:3px;color:var(--ok);margin:0 0 4px}
+@media (max-width:720px){#lobby .card{grid-template-columns:1fr;text-align:center}.slots{text-align:left}}
+</style>
+</head>
+<body>
+
+<!-- ═════════ SCHERMO (PC) ═════════ -->
+<section class="game hidden" id="display">
+  <canvas id="dcv"></canvas>
+  <div class="bar">
+    <span class="pill" id="dRoom">Stanza ----</span>
+    <button class="small" id="btnFull">⛶ Schermo intero</button>
+  </div>
+  <div class="veil" id="lobby">
+    <div class="card">
+      <div id="qrBox"><div id="qr"></div><div id="qrMissing" class="hidden">Il QR non è disponibile.<br>Usa il link o il codice.</div></div>
+      <div>
+        <div id="lobbyTitle">PONG ARENA</div>
+        <div class="sub" id="lobbySub" style="margin:0 0 10px">Inquadra il QR con due smartphone: ognuno vedrà la partita dalla propria parte.</div>
+        <div class="code" id="dCode">----</div>
+        <div class="link" id="dLink"></div>
+        <div class="slots" id="slots"></div>
+        <div class="warn hidden" id="fileWarn">Hai aperto il file dal computer: i telefoni non possono raggiungerlo. Pubblicalo online (per esempio con Netlify Drop) e apri quel link sul PC.</div>
+        <div class="warn hidden" id="netWarn"></div>
+      </div>
+    </div>
+  </div>
+  <div class="veil hidden" id="dOver">
+    <div class="card">
+      <div class="big" id="dOverTitle"></div>
+      <div class="score" id="dOverScore"></div>
+      <div class="sub" id="dOverSub"></div>
+      <button class="primary" id="btnNew">Nuova partita (Spazio)</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ TELEFONO: scelta codice ═════════ -->
+<section class="screen hidden" id="home">
+  <div class="card">
+    <h1>PONG ARENA</h1>
+    <p class="sub">Inquadra il QR sullo schermo del PC, oppure inserisci il codice della stanza.</p>
+    <input id="codeIn" maxlength="4" placeholder="ABCD" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <div class="row"><button class="primary" id="btnJoin">Entra</button></div>
+    <p style="margin:18px 0 0;font-size:13px"><a href="?screen" id="asScreen">Usa questo dispositivo come schermo</a></p>
+  </div>
+</section>
+
+<section class="screen hidden" id="joining">
+  <div class="card">
+    <h2 id="joinText">Connessione…</h2>
+    <div class="status"><span class="spin"></span><span>Mi collego allo schermo della partita.</span></div>
+    <div class="row" style="margin-top:16px"><button id="btnCancel">Annulla</button></div>
+  </div>
+</section>
+
+<section class="screen hidden" id="msg">
+  <div class="card">
+    <h2 id="msgTitle">Ops</h2>
+    <p class="sub" id="msgText"></p>
+    <button class="primary" id="btnBack">Riprova</button>
+  </div>
+</section>
+
+<!-- ═════════ TELEFONO: controller con visuale propria ═════════ -->
+<section class="game hidden" id="ctrl">
+  <canvas id="ccv"></canvas>
+  <div class="bar">
+    <span class="pill" id="cSide">—</span>
+    <span class="pill" id="cPing">📶 – ms</span>
+    <button class="small" id="btnExit">Esci</button>
+  </div>
+  <div class="veil hidden" id="cOver">
+    <div class="card">
+      <div class="big" id="cOverTitle"></div>
+      <div class="score" id="cOverScore"></div>
+      <div class="sub" id="cOverOpp" style="min-height:20px"></div>
+      <button class="primary" id="btnRematch">Rivincita</button>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+// ════════════════ Costanti condivise ════════════════
+// Il campo "vero" è quello classico orizzontale: x da 0 a FW, y da 0 a FH.
+const FW = 1.6, FH = 1;
+const PX = .06, PT = .028, PL = .24;   // barra: distanza dal bordo, spessore, lunghezza
+const BR = .018;                       // raggio pallina
+const SPEED0 = .8, SPEEDUP = 1.06, SMAX = 2.2, WIN = 3;
+const STEP = 1/120, SNAP_MS = 33;
+const PREFIX = 'pongarena-v1-';
+const ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const COL = {L:'#3ff0ff', R:'#ff4d8d'}, NAME = {L:'SINISTRA', R:'DESTRA'};
+
+const $ = s => document.querySelector(s);
+const params = new URLSearchParams(location.search);
+const LOCAL = params.has('local');     // test: tutte le finestre nello stesso browser, senza rete
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const r4 = v => Math.round(v*1e4)/1e4;
+const newCode = () => Array.from({length:4}, () => ALPH[Math.floor(Math.random()*ALPH.length)]).join('');
+const getPeer = () => window.Peer || (window.peerjs && window.peerjs.Peer);
+const buzz = p => { try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} };
+function show(id){ document.querySelectorAll('.screen,.game').forEach(e => e.classList.toggle('hidden', e.id !== id)); }
+function peerOpts(){
+  const o = {debug:0};
+  if(params.get('peerhost')){ o.host = params.get('peerhost'); o.port = +params.get('peerport') || 443; o.path = params.get('peerpath') || '/'; o.secure = params.get('peersecure') !== '0'; }
+  return o;
+}
+function errText(e){
+  if(['network','server-error','socket-error','socket-closed'].includes(e.type)) return 'Non riesco a raggiungere il server di collegamento. Controlla la connessione a internet e riprova.';
+  if(e.type === 'browser-incompatible') return 'Questo browser non supporta WebRTC. Prova con Chrome o Safari aggiornati.';
+  return `Errore di connessione (${e.type || e}).`;
+}
+function fitField(cv, ctx, w, h, fw, fh, top, bottom, side){
+  const dpr = devicePixelRatio || 1;
+  cv.width = w*dpr; cv.height = h*dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const s = Math.min((w - side*2)/fw, (h - top - bottom)/fh);
+  return {s, w, h, ox:(w - fw*s)/2, oy:top + (h - top - bottom - fh*s)/2};
+}
+
+// ════════════════ SCHERMO (PC): arbitro + visuale classica ════════════════
+const D = {
+  room:'', peer:null, bc:null, conns:{},
+  players:{L:null, R:null},   // {kind:'phone'|'cpu'|'kbd', id, send, close, y, ty, lastRx, ready, rtt}
+  G:{ball:{x:FW/2, y:FH/2, vx:0, vy:0}, pend:{vx:0, vy:0}, sc:[0,0], ph:'lobby', phEnd:0, hits:0, lh:'', w:''},
+  keys:{}, L:null, acc:0, lastSend:0, lastT:0
+};
+
+function startDisplay(){
+  show('display');
+  D.room = newCode();
+  $('#dRoom').textContent = `Stanza ${D.room}`; $('#dCode').textContent = D.room;
+  const url = new URL(location.href); url.search = ''; url.hash = '';
+  url.searchParams.set('room', D.room); if(LOCAL) url.searchParams.set('local', '');
+  const link = url.toString().replace('local=', 'local');
+  $('#dLink').textContent = link;
+  const isFile = location.protocol === 'file:';
+  $('#fileWarn').classList.toggle('hidden', !isFile);
+  if(window.qrcode){ const q = qrcode(0, 'M'); q.addData(link); q.make(); $('#qr').innerHTML = q.createSvgTag(6, 2); }
+  else { $('#qr').classList.add('hidden'); $('#qrMissing').classList.remove('hidden'); }
+  renderSlots(); openRoom();
+  addEventListener('resize', dResize); dResize();
+  D.lastT = performance.now(); requestAnimationFrame(dFrame);
+}
+
+function openRoom(){
+  if(LOCAL){
+    D.bc = new BroadcastChannel('pongarena-local');
+    D.bc.onmessage = e => { const {room, from, to, m} = e.data; if(room !== D.room || to !== 'display') return;
+      if(m.t === 'hi') join(from, x => D.bc.postMessage({room:D.room, from:'display', to:from, m:x}), () => {});
+      else if(m.t === 'bye') leave(from);
+      else onPlayerMsg(from, m); };
+    return;
+  }
+  const Peer = getPeer();
+  if(!Peer){ netWarn('Non riesco a caricare la libreria di rete (PeerJS). Serve una connessione a internet.'); return; }
+  const peer = new Peer(PREFIX + D.room, peerOpts()); D.peer = peer;
+  peer.on('open', () => netWarn(''));
+  peer.on('connection', c => {
+    c.on('open', () => { D.conns[c.peer] = c; join(c.peer, m => { if(c.open) c.send(m); }, () => c.close()); });
+    c.on('data', m => onPlayerMsg(c.peer, m));
+    c.on('close', () => leave(c.peer));
+    c.on('error', () => leave(c.peer));
+  });
+  peer.on('error', e => {
+    if(e.type === 'unavailable-id'){ peer.destroy(); D.room = newCode(); location.reload(); return; }
+    if(e.type !== 'peer-unavailable') netWarn(errText(e));
+  });
+  peer.on('disconnected', () => { try{ peer.reconnect(); }catch(e){} });
+}
+function netWarn(t){ $('#netWarn').textContent = t; $('#netWarn').classList.toggle('hidden', !t); }
+
+const sideOf = id => ['L','R'].find(s => D.players[s] && D.players[s].id === id);
+function join(id, send, close){
+  if(sideOf(id)) return;
+  const P = D.players;
+  let side = !P.L ? 'L' : !P.R ? 'R' : P.L.kind !== 'phone' ? 'L' : P.R.kind !== 'phone' ? 'R' : null;
+  if(!side){ send({t:'full'}); setTimeout(close, 300); return; }
+  P[side] = {kind:'phone', id, send, close, y:FH/2, ty:FH/2, lastRx:performance.now(), ready:false, rtt:0};
+  send({t:'role', side});
+  slotsChanged();
+}
+function leave(id){
+  const s = sideOf(id); if(!s) return;
+  try{ D.players[s].close(); }catch(e){}
+  D.players[s] = null; delete D.conns[id];
+  slotsChanged();
+}
+function addBot(side, kind){ D.players[side] = {kind, id:kind + side, send(){}, close(){}, y:FH/2, ty:FH/2, lastRx:Infinity, ready:true, rtt:0}; slotsChanged(); }
+function removeBot(side){ D.players[side] = null; slotsChanged(); }
+
+function onPlayerMsg(id, m){
+  const s = sideOf(id); if(!s) return;
+  const p = D.players[s]; p.lastRx = performance.now();
+  if(m.t === 'p') p.ty = clamp(+m.y, PL/2, FH - PL/2);
+  else if(m.t === 'ping'){ p.send({t:'pong', ts:m.ts}); p.rtt = +m.r || 0; }
+  else if(m.t === 'rematch'){ p.ready = true; checkRematch(); }
+  else if(m.t === 'bye') leave(id);
+}
+
+function slotsChanged(){
+  const G = D.G, full = D.players.L && D.players.R;
+  if(full){ if(G.ph === 'lobby') resetGame(); else if(G.ph === 'wait') serve(Math.random() < .5 ? 1 : -1, 3000); }
+  else if(G.ph === 'cd' || G.ph === 'play') G.ph = 'wait';
+  renderSlots();
+}
+function renderSlots(){
+  const box = $('#slots'); box.innerHTML = '';
+  for(const s of ['L','R']){
+    const p = D.players[s], el = document.createElement('div');
+    el.className = `slot ${s}${p ? ' on' : ''}`;
+    const st = !p ? '<span class="spin"></span> In attesa di un telefono…'
+      : p.kind === 'phone' ? '📱 Telefono collegato' : p.kind === 'cpu' ? '🤖 Computer' : `⌨️ Tastiera (${s === 'L' ? 'W / S' : '↑ / ↓'})`;
+    el.innerHTML = `<b>${NAME[s]}</b><div class="st">${st}</div><div class="btns"></div>`;
+    const btns = el.querySelector('.btns');
+    const mk = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.onclick = fn; btns.appendChild(b); };
+    if(!p){ mk('+ Computer', () => addBot(s, 'cpu')); mk('+ Tastiera', () => addBot(s, 'kbd')); }
+    else if(p.kind !== 'phone') mk('Rimuovi', () => removeBot(s));
+    box.appendChild(el);
+  }
+  const G = D.G;
+  $('#lobbySub').textContent = G.ph === 'wait'
+    ? 'Partita in pausa: manca un giocatore. Può rientrare inquadrando il QR.'
+    : 'Inquadra il QR con due smartphone: ognuno vedrà la partita dalla propria parte.';
+}
+
+// ── Fisica (gira solo qui) ──
+function resetGame(){
+  const G = D.G; G.sc = [0,0]; G.w = ''; G.hits = 0;
+  for(const s of ['L','R']) if(D.players[s]) D.players[s].ready = D.players[s].kind !== 'phone';
+  serve(Math.random() < .5 ? 1 : -1, 3000);
+}
+function serve(dir, delay){
+  const G = D.G, a = (Math.random() - .5) * .8;
+  G.ball = {x:FW/2, y:FH/2, vx:0, vy:0};
+  G.pend = {vx:Math.cos(a)*SPEED0*dir, vy:Math.sin(a)*SPEED0};
+  G.ph = 'cd'; G.phEnd = performance.now() + delay;
+}
+function bounce(side, py, dir){
+  const G = D.G, b = G.ball, off = clamp((b.y - py)/(PL/2), -1, 1), a = off*1.05;
+  const sp = Math.min(Math.hypot(b.vx, b.vy)*SPEEDUP, SMAX);
+  b.vx = Math.cos(a)*sp*dir; b.vy = Math.sin(a)*sp;
+  G.hits++; G.lh = side;
+  D.players[side] && D.players[side].send({t:'hit'});
+}
+function scorePoint(side){
+  const G = D.G; G.sc[side === 'L' ? 0 : 1]++;
+  for(const s of ['L','R']) D.players[s] && D.players[s].send({t:'pt', won:s === side});
+  if(G.sc[0] >= WIN || G.sc[1] >= WIN){
+    G.ph = 'over'; G.w = side; G.ball = {x:FW/2, y:FH/2, vx:0, vy:0};
+    for(const s of ['L','R']) if(D.players[s]) D.players[s].ready = D.players[s].kind !== 'phone';
+    return;
+  }
+  serve(side === 'L' ? 1 : -1, 1000);   // la pallina va verso chi ha subito il punto
+}
+function step(dt, now){
+  const G = D.G;
+  if(G.ph === 'cd'){ if(now >= G.phEnd){ G.ph = 'play'; G.ball.vx = G.pend.vx; G.ball.vy = G.pend.vy; } return; }
+  if(G.ph !== 'play') return;
+  const b = G.ball, x0 = b.x, Lp = D.players.L, Rp = D.players.R;
+  b.x += b.vx*dt; b.y += b.vy*dt;
+  if(b.y < BR){ b.y = 2*BR - b.y; b.vy = Math.abs(b.vy); }
+  if(b.y > FH - BR){ b.y = 2*(FH - BR) - b.y; b.vy = -Math.abs(b.vy); }
+  const lf = PX + PT/2, rf = FW - PX - PT/2;
+  if(b.vx < 0 && x0 - BR >= lf - 1e-4 && b.x - BR <= lf && Math.abs(b.y - Lp.y) <= PL/2 + BR){ b.x = lf + BR; bounce('L', Lp.y, 1); }
+  if(b.vx > 0 && x0 + BR <= rf + 1e-4 && b.x + BR >= rf && Math.abs(b.y - Rp.y) <= PL/2 + BR){ b.x = rf - BR; bounce('R', Rp.y, -1); }
+  if(b.x < -BR*3) scorePoint('R'); else if(b.x > FW + BR*3) scorePoint('L');
+}
+function movePaddles(dt){
+  const G = D.G;
+  for(const s of ['L','R']){
+    const p = D.players[s]; if(!p) continue;
+    if(p.kind === 'phone') p.y += (p.ty - p.y) * Math.min(1, dt*30);
+    else if(p.kind === 'kbd'){
+      const up = s === 'L' ? D.keys.w : D.keys.ArrowUp, dn = s === 'L' ? D.keys.s : D.keys.ArrowDown;
+      p.y = clamp(p.y + ((dn ? 1 : 0) - (up ? 1 : 0)) * 1.4 * dt, PL/2, FH - PL/2);
+    } else {
+      const coming = s === 'L' ? G.ball.vx < 0 : G.ball.vx > 0;
+      const target = coming && G.ph === 'play' ? G.ball.y + Math.sin(performance.now()/700) * .06 : FH/2;
+      const d = target - p.y; p.y = clamp(p.y + Math.sign(d) * Math.min(Math.abs(d), .95*dt), PL/2, FH - PL/2);
+    }
+  }
+}
+function checkRematch(){ const {L, R} = D.players; if(D.G.ph === 'over' && L && R && L.ready && R.ready) resetGame(); }
+function sendSnap(now){
+  const G = D.G, b = G.ball, P = D.players;
+  const m = {t:'s', b:[r4(b.x), r4(b.y), r4(b.vx), r4(b.vy)], ly:r4(P.L ? P.L.y : FH/2), ry:r4(P.R ? P.R.y : FH/2),
+    sc:G.sc, ph:G.ph, cd:Math.max(0, Math.round(G.phEnd - now)), w:G.w, rd:[!!(P.L && P.L.ready), !!(P.R && P.R.ready)]};
+  for(const s of ['L','R']) if(P[s] && P[s].kind === 'phone') P[s].send(m);
+}
+
+// ── Disegno classico ──
+const dcv = $('#dcv'), dctx = dcv.getContext('2d');
+function dResize(){ D.L = fitField(dcv, dctx, innerWidth, innerHeight, FW, FH, 50, 20, 20); }
+function dDraw(now){
+  const c = dctx, {s, ox, oy, w, h} = D.L, G = D.G, P = D.players;
+  c.fillStyle = '#05070b'; c.fillRect(0, 0, w, h);
+  c.fillStyle = '#000'; c.fillRect(ox, oy, FW*s, FH*s);
+  c.strokeStyle = '#2a3144'; c.lineWidth = 2; c.strokeRect(ox, oy, FW*s, FH*s);
+  c.fillStyle = '#333'; for(let y = .02; y < FH; y += .06) c.fillRect(ox + FW/2*s - 2, oy + y*s, 4, .035*s);
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.font = `800 ${Math.round(s*.16)}px ui-monospace,Menlo,monospace`;
+  c.fillStyle = COL.L; c.fillText(G.sc[0], ox + FW*.36*s, oy + .14*s);
+  c.fillStyle = COL.R; c.fillText(G.sc[1], ox + FW*.64*s, oy + .14*s);
+  c.font = `600 ${Math.round(s*.028)}px system-ui,sans-serif`; c.fillStyle = '#8b93a7';
+  for(const [side, x] of [['L', .36], ['R', .64]]){
+    const p = P[side]; if(!p) continue;
+    const tag = p.kind === 'phone' ? `📱 ${p.rtt ? Math.round(p.rtt) + ' ms' : ''}` : p.kind === 'cpu' ? '🤖 computer' : '⌨️ tastiera';
+    c.fillText(tag, ox + FW*x*s, oy + .25*s);
+  }
+  const pad = (side, y) => {
+    const x = side === 'L' ? PX : FW - PX;
+    c.fillStyle = COL[side]; c.shadowColor = COL[side]; c.shadowBlur = 14;
+    c.fillRect(ox + (x - PT/2)*s, oy + (y - PL/2)*s, PT*s, PL*s); c.shadowBlur = 0;
+  };
+  if(P.L) pad('L', P.L.y); if(P.R) pad('R', P.R.y);
+  if(G.ph === 'cd' || G.ph === 'play'){
+    c.fillStyle = '#fff'; c.fillRect(ox + (G.ball.x - BR)*s, oy + (G.ball.y - BR)*s, BR*2*s, BR*2*s);
+  }
+  if(G.ph === 'cd'){
+    const n = Math.ceil((G.phEnd - now)/1000);
+    if(n > 0){ c.fillStyle = '#fff'; c.font = `800 ${Math.round(s*.16)}px ui-monospace,monospace`; c.fillText(n, ox + FW/2*s, oy + FH*.72*s); }
+  }
+}
+let dOverKey = '';
+function dOverlays(){
+  const G = D.G, P = D.players;
+  $('#lobby').classList.toggle('hidden', !(G.ph === 'lobby' || G.ph === 'wait'));
+  const key = G.ph === 'over' ? [G.w, G.sc.join(), P.L && P.L.ready, P.R && P.R.ready].join('|') : '';
+  if(key === dOverKey) return; dOverKey = key;
+  $('#dOver').classList.toggle('hidden', G.ph !== 'over');
+  if(G.ph !== 'over') return;
+  $('#dOverTitle').textContent = `VINCE ${NAME[G.w]}`; $('#dOverTitle').style.color = COL[G.w];
+  $('#dOverScore').textContent = `${G.sc[0]} – ${G.sc[1]}`;
+  const rd = s => P[s] && P[s].ready ? '✓ pronto' : 'in attesa';
+  $('#dOverSub').textContent = `Rivincita: sinistra ${rd('L')} · destra ${rd('R')}`;
+}
+function dFrame(now){
+  const dt = Math.min(.05, (now - D.lastT)/1000); D.lastT = now;
+  movePaddles(dt);
+  D.acc += dt; while(D.acc >= STEP){ step(STEP, now); D.acc -= STEP; }
+  for(const s of ['L','R']){ const p = D.players[s]; if(p && p.kind === 'phone' && now - p.lastRx > 6000) leave(p.id); }
+  if(now - D.lastSend >= SNAP_MS){ sendSnap(now); D.lastSend = now; }
+  dDraw(now); dOverlays();
+  requestAnimationFrame(dFrame);
+}
+addEventListener('keydown', e => {
+  if(!$('#display').classList.contains('hidden')){
+    D.keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = true;
+    if(e.key.startsWith('Arrow')) e.preventDefault();
+    if(e.key === ' ' && D.G.ph === 'over' && D.players.L && D.players.R){ e.preventDefault(); resetGame(); }
+  }
+});
+addEventListener('keyup', e => { D.keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = false; });
+$('#btnNew').onclick = () => { if(D.players.L && D.players.R) resetGame(); };
+$('#btnFull').onclick = () => { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}); };
+
+// ════════════════ TELEFONO: controller con visuale ruotata ════════════════
+// Il telefono vede un campo verticale largo FH e alto FW, con la propria barra in basso.
+// SINISTRA: (x, y) → (y, FW − x)      DESTRA: (x, y) → (FH − y, x)   (sono rotazioni, non specchi)
+const C = { side:null, conn:null, peer:null, bc:null, cid:'', room:'', connected:false, myY:FH/2, sentY:-1, lastSentP:0,
+  snap:null, snapT:0, oppDraw:FH/2, ballDraw:null, rtt:0, lastRx:0, timer:0, joinTimer:0, wake:null, L:null };
+const ccv = $('#ccv'), cctx = ccv.getContext('2d');
+
+function cSend(m){ try{
+  if(C.bc) C.bc.postMessage({room:C.room, from:C.cid, to:'display', m});
+  else if(C.conn && C.conn.open) C.conn.send(m);
+}catch(e){} }
+function cCleanup(){
+  try{ if(C.connected) cSend({t:'bye'}); }catch(e){}
+  try{ C.conn && C.conn.close(); }catch(e){} try{ C.peer && C.peer.destroy(); }catch(e){} try{ C.bc && C.bc.close(); }catch(e){}
+  C.conn = C.peer = C.bc = null; C.connected = false; C.side = null; C.snap = null; C.rtt = 0;
+  clearInterval(C.timer); clearTimeout(C.joinTimer);
+  try{ C.wake && C.wake.release(); }catch(e){} C.wake = null;
+  $('#cOver').classList.add('hidden'); cOverKey = '';
+}
+function cFail(text, title='Ops'){ cCleanup(); $('#msgTitle').textContent = title; $('#msgText').textContent = text; show('msg'); }
+
+function joinRoom(code){
+  code = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if(code.length !== 4){ $('#codeIn').focus(); return; }
+  cCleanup(); C.room = code; C.cid = 'c' + Math.random().toString(36).slice(2, 9);
+  $('#joinText').textContent = `Connessione alla stanza ${code}…`; show('joining');
+  C.joinTimer = setTimeout(() => { if(!C.side) cFail('Lo schermo non risponde. Controlla il codice, oppure la rete non permette il collegamento diretto: prova con un\'altra connessione.'); }, 15000);
+  if(LOCAL){
+    C.bc = new BroadcastChannel('pongarena-local');
+    C.bc.onmessage = e => { const {room, from, to, m} = e.data; if(room !== C.room || to !== C.cid) return; cData(m); };
+    cSend({t:'hi'}); C.connected = true;
+    return;
+  }
+  const Peer = getPeer(); if(!Peer) return cFail('Non riesco a caricare la libreria di rete (PeerJS). Serve una connessione a internet.');
+  const peer = new Peer(peerOpts()); C.peer = peer;
+  peer.on('open', () => {
+    const c = peer.connect(PREFIX + code, {serialization:'json'}); C.conn = c;
+    c.on('open', () => { C.connected = true; });
+    c.on('data', cData);
+    c.on('close', cLost); c.on('error', cLost);
+  });
+  peer.on('error', e => { if(C.side) return; cFail(e.type === 'peer-unavailable' ? `La stanza ${code} non esiste o lo schermo è stato chiuso.` : errText(e)); });
+}
+function cLost(){ if(C.side) cFail('Il collegamento con lo schermo si è interrotto.', 'Partita interrotta'); }
+
+function cData(m){
+  C.lastRx = performance.now();
+  switch(m.t){
+    case 'role':
+      C.side = m.side; clearTimeout(C.joinTimer);
+      $('#cSide').textContent = `Sei: ${NAME[C.side]}`; $('#cSide').style.color = COL[C.side]; $('#cSide').style.borderColor = COL[C.side];
+      show('ctrl'); cResize(); C.myY = FH/2; C.sentY = -1;
+      C.timer = setInterval(() => { cSend({t:'ping', ts:performance.now(), r:Math.round(C.rtt)}); if(performance.now() - C.lastRx > 5000) cLost(); }, 1000);
+      if(navigator.wakeLock) navigator.wakeLock.request('screen').then(w => C.wake = w).catch(() => {});
+      buzz(40); break;
+    case 's': C.snap = m; C.snapT = performance.now(); break;
+    case 'hit': buzz(12); break;
+    case 'pt': if(!m.won) buzz([20, 40, 20]); break;
+    case 'pong': { const r = performance.now() - m.ts; C.rtt = C.rtt ? C.rtt*.7 + r*.3 : r; $('#cPing').textContent = `📶 ${Math.round(C.rtt)} ms`; break; }
+    case 'full': cFail('Ci sono già due giocatori collegati. Puoi guardare la partita sullo schermo.', 'Partita piena'); break;
+  }
+}
+
+// ── Visuale 3D "Tribuna" del telefono ──
+// Il telefono vede il campo da dietro la propria barra. Coordinate locali:
+// u = posizione laterale (0..FH), z = profondità dalla propria barra (0..FW), h = altezza.
+const CAM = {x:FH/2, y:1.7, z:-.45, pitch:1.08}, CP = Math.cos(CAM.pitch), SP = Math.sin(CAM.pitch);
+const PADH = .05, CTRL_FRAC = .27;
+let V = null, pad = {id:null, lx:0, finger:null, touched:false};
+const uOf = y => C.side === 'L' ? y : FH - y;               // y del mondo → u locale (vale anche all'inverso)
+const zOf = x => C.side === 'L' ? x : FW - x;               // x del mondo → profondità
+function raw(u, h, z){ const dx = u - CAM.x, dy = h - CAM.y, dz = z - CAM.z, zc = dz*CP - dy*SP, yc = dy*CP + dz*SP; return [dx/zc, -yc/zc, zc]; }
+function P3(u, h, z){ const [a, b, zc] = raw(u, h, z); return [V.ox + a*V.k, V.oy + b*V.k, zc]; }
+function cResize(){
+  const dpr = devicePixelRatio || 1, w = innerWidth, h = innerHeight;
+  ccv.width = w*dpr; ccv.height = h*dpr; cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const bar = document.querySelector('#ctrl .bar').getBoundingClientRect();
+  const top = Math.max(44, bar.bottom + 4), gh = h*(1 - CTRL_FRAC);
+  const fs = Math.round(Math.min(w*.1, 40)), lh = Math.min(w*.34, gh*.22);
+  const fieldTop = top + lh + fs*1.25, m = 10;
+  const pts = [raw(0,0,0), raw(FH,0,0), raw(0,0,FW), raw(FH,0,FW)];
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const minY = Math.min(...ys), maxY = Math.max(...ys), minX = Math.min(...xs), maxX = Math.max(...xs);
+  const k = Math.min((gh - fieldTop - m)/(maxY - minY), (w - 32)/(pts[1][0] - pts[0][0]), (w - 2*m)/(pts[3][0] - pts[2][0]));
+  V = {w, h, gh, k, fs, lh, top, ox:w/2 - (minX + maxX)/2*k, oy:gh - m - maxY*k};
+}
+function poly3(c, pts, fill, stroke){
+  c.beginPath(); pts.forEach((p, i) => { const q = P3(...p); i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1]); });
+  c.closePath(); if(fill){ c.fillStyle = fill; c.fill(); } if(stroke){ c.strokeStyle = stroke; c.stroke(); }
+}
+function line3(c, a, b, col, w){ const p = P3(...a), q = P3(...b); c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); }
+function shade(hex, f){ const n = parseInt(hex.slice(1), 16); return `rgb(${(n >> 16)*f|0},${((n >> 8) & 255)*f|0},${(n & 255)*f|0})`; }
+function box3(c, u, z, col, bright){
+  const x0 = u - PL/2, x1 = u + PL/2, z0 = z - PT/2, z1 = z + PT/2, h = PADH;
+  c.shadowColor = col; c.shadowBlur = bright ? 18 : 8;
+  if(CAM.x < x0) poly3(c, [[x0,0,z0],[x0,h,z0],[x0,h,z1],[x0,0,z1]], shade(col, .55));
+  if(CAM.x > x1) poly3(c, [[x1,0,z0],[x1,h,z0],[x1,h,z1],[x1,0,z1]], shade(col, .55));
+  poly3(c, [[x0,h,z0],[x1,h,z0],[x1,h,z1],[x0,h,z1]], col);
+  poly3(c, [[x0,0,z0],[x1,0,z0],[x1,h,z0],[x0,h,z0]], shade(col, .78));
+  c.shadowBlur = 0;
+}
+function rr(c, x, y, w, h, r){ c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+
+// ── Logo HUD ──
+function spaced(c, text, cx, y, ls){
+  const ws = [...text].map(ch => c.measureText(ch).width), tot = ws.reduce((a, b) => a + b, 0) + ls*(text.length - 1);
+  let x = cx - tot/2; c.textAlign = 'left'; [...text].forEach((ch, i) => { c.fillText(ch, x, y); x += ws[i] + ls; }); c.textAlign = 'center';
+}
+function logoHud(c, W, H, oy, now){
+  c.save(); c.translate(0, oy); c.textBaseline = 'middle'; c.textAlign = 'center';
+  c.font = '100px "Michroma", sans-serif';
+  const sz = 100*W*.66/(c.measureText('PONG').width + 12*3), ls = sz*.12, y = H*.42;
+  c.font = `${sz}px "Michroma", sans-serif`;
+  const glitch = (now % 3000) < 140, off = glitch ? 5 : 1.6;
+  c.save(); c.globalCompositeOperation = 'lighter';
+  c.fillStyle = 'rgba(255,77,141,.9)'; spaced(c, 'PONG', W/2 - off, y, ls);
+  c.fillStyle = 'rgba(63,240,255,.9)'; spaced(c, 'PONG', W/2 + off, y, ls);
+  c.restore();
+  c.fillStyle = '#f2f6ff'; spaced(c, 'PONG', W/2, y, ls);
+  if(glitch){ const dpr = ccv.width/V.w;
+    for(let i = 0; i < 3; i++){ const by = oy + y - sz*.4 + Math.random()*sz*.8, bh = 3 + Math.random()*6, dx = (Math.random() - .5)*18;
+      c.drawImage(ccv, 0, by*dpr, ccv.width, bh*dpr, dx, by - oy, W, bh); } }
+  const fx = W*.08, fy = H*.08, fw = W*.84, fh = H*.66, L = 16;
+  c.strokeStyle = '#3ff0ff'; c.lineWidth = 2; c.lineCap = 'square';
+  for(const [x, y2, dx, dy] of [[fx, fy, 1, 1], [fx + fw, fy, -1, 1], [fx, fy + fh, 1, -1], [fx + fw, fy + fh, -1, -1]]){
+    c.beginPath(); c.moveTo(x, y2 + dy*L); c.lineTo(x, y2); c.lineTo(x + dx*L, y2); c.stroke(); }
+  const s2 = W*.045; c.font = `${s2}px "Michroma", sans-serif`; c.fillStyle = '#ff4d8d';
+  spaced(c, 'ARENA', W/2, fy + fh, s2*1.2);
+  c.font = `700 ${W*.03}px "Chakra Petch", monospace`; c.fillStyle = 'rgba(191,248,255,.75)'; c.textAlign = 'left';
+  c.fillText(`${NAME[C.side]} · PRIMO A ${WIN}`, fx, H*.94);
+  c.textAlign = 'right'; c.fillStyle = (now % 1000) < 600 ? '#ff4d8d' : 'rgba(255,77,141,.3)';
+  c.fillText('● LIVE', fx + fw, H*.94);
+  c.restore();
+}
+
+// ── Touchpad ──
+function moveMine(du){ const u = clamp(uOf(C.myY) + du, PL/2, FH - PL/2); C.myY = uOf(u); }
+ccv.addEventListener('pointerdown', e => {
+  if(!C.side || !V) return; const r = ccv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  if(y < V.gh) return;
+  e.preventDefault(); ccv.setPointerCapture(e.pointerId); pad = {id:e.pointerId, lx:x, finger:[x, y], touched:true};
+});
+ccv.addEventListener('pointermove', e => {
+  if(pad.id !== e.pointerId) return; const r = ccv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  moveMine((x - pad.lx)/(V.w - 40)*1.3*(FH - PL)); pad.lx = x; pad.finger = [x, y];
+});
+const padUp = e => { if(pad.id === e.pointerId){ pad.id = null; pad.finger = null; } };
+ccv.addEventListener('pointerup', padUp); ccv.addEventListener('pointercancel', padUp);
+
+function predictBall(now){
+  let [x, y, vx, vy] = C.snap.b;
+  if(C.snap.ph !== 'play') return {x, y};
+  const t = Math.min((now - C.snapT)/1000, .12);
+  x += vx*t; y += vy*t;
+  if(y < BR) y = 2*BR - y; if(y > FH - BR) y = 2*(FH - BR) - y;
+  return {x, y};
+}
+function cDraw(now){
+  const c = cctx; if(!V) return;
+  const W = V.w, H = V.h, gh = V.gh, S = C.snap;
+  c.fillStyle = '#05070b'; c.fillRect(0, 0, W, H);
+  if(!S || !C.side) return;
+  const me = C.side, opp = me === 'L' ? 'R' : 'L', mi = me === 'L' ? 0 : 1;
+  const bg = c.createLinearGradient(0, 0, 0, gh); bg.addColorStop(0, '#07080c'); bg.addColorStop(1, '#0d1018');
+  c.fillStyle = bg; c.fillRect(0, 0, W, gh);
+  c.save(); c.beginPath(); c.rect(0, 0, W, gh); c.clip();
+  const hz = P3(FH/2, 0, FW), glow = c.createRadialGradient(hz[0], hz[1], 0, hz[0], hz[1], W*.8);
+  glow.addColorStop(0, COL[opp] + '29'); glow.addColorStop(1, COL[opp] + '00');
+  c.fillStyle = glow; c.fillRect(0, 0, W, gh);
+  // campo
+  poly3(c, [[0,0,0],[FH,0,0],[FH,0,FW],[0,0,FW]], '#0b0f17');
+  for(let z = .2; z < FW; z += .2) line3(c, [0,0,z], [FH,0,z], 'rgba(90,110,150,.16)', 1);
+  for(const u of [.25, .5, .75]) line3(c, [u,0,0], [u,0,FW], 'rgba(90,110,150,.12)', 1);
+  for(let u = 0; u < FH; u += .08) line3(c, [u + .01,0,FW/2], [u + .05,0,FW/2], 'rgba(200,210,235,.45)', 2);
+  const wh = .035;
+  poly3(c, [[0,0,0],[0,wh,0],[0,wh,FW],[0,0,FW]], 'rgba(120,130,160,.10)');
+  poly3(c, [[FH,0,0],[FH,wh,0],[FH,wh,FW],[FH,0,FW]], 'rgba(120,130,160,.10)');
+  line3(c, [0,wh,0], [0,wh,FW], 'rgba(170,180,210,.55)', 2); line3(c, [FH,wh,0], [FH,wh,FW], 'rgba(170,180,210,.55)', 2);
+  line3(c, [0,0,FW], [FH,0,FW], COL[opp] + '80', 2); line3(c, [0,0,0], [FH,0,0], COL[me] + '80', 2);
+  // barre e pallina
+  const waiting = S.ph === 'lobby' || S.ph === 'wait';
+  C.oppDraw += ((me === 'L' ? S.ry : S.ly) - C.oppDraw) * .45;
+  const drawBall = () => {
+    if(!(S.ph === 'cd' || S.ph === 'play')) return;
+    const p = predictBall(now);
+    if(!C.ballDraw || S.ph !== 'play' || Math.hypot(p.x - C.ballDraw.x, p.y - C.ballDraw.y) > .15) C.ballDraw = {x:p.x, y:p.y, tr:[]};
+    else { C.ballDraw.x += (p.x - C.ballDraw.x)*.5; C.ballDraw.y += (p.y - C.ballDraw.y)*.5; }
+    const bd = C.ballDraw; bd.tr = (bd.tr || []).concat([[bd.x, bd.y]]).slice(-10);
+    const u = uOf(bd.y), z = zOf(bd.x);
+    const sh = P3(u, 0, z), b = P3(u, BR, z), r = Math.max(2, BR*V.k/b[2]);
+    c.fillStyle = 'rgba(0,0,0,.55)'; c.beginPath(); c.ellipse(sh[0], sh[1], r*1.1, r*.45, 0, 0, Math.PI*2); c.fill();
+    bd.tr.forEach(([x, y], i) => { const q = P3(uOf(y), BR, zOf(x)); c.fillStyle = `rgba(255,255,255,${i/bd.tr.length*.18})`; c.beginPath(); c.arc(q[0], q[1], r*.7, 0, Math.PI*2); c.fill(); });
+    const g = c.createRadialGradient(b[0] - r*.35, b[1] - r*.35, r*.1, b[0], b[1], r);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#b9c2d6');
+    c.fillStyle = g; c.shadowColor = '#fff'; c.shadowBlur = 10; c.beginPath(); c.arc(b[0], b[1], r, 0, Math.PI*2); c.fill(); c.shadowBlur = 0;
+    return z;
+  };
+  if(!waiting) box3(c, uOf(C.oppDraw), FW - PX, COL[opp], false);
+  const bz = C.ballDraw ? zOf(C.ballDraw.x) : 1;
+  if(bz > PX){ drawBall(); box3(c, uOf(C.myY), PX, COL[me], true); }
+  else { box3(c, uOf(C.myY), PX, COL[me], true); drawBall(); }
+  // scritte al centro del campo
+  const mid = P3(FH/2, 0, FW/2);
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  if(S.ph === 'cd'){
+    const cd = S.cd - (now - C.snapT);
+    if(cd > 0){
+      c.fillStyle = '#fff'; c.font = `700 ${Math.round(W*.16)}px "Chakra Petch", monospace`; c.fillText(Math.ceil(cd/1000), mid[0], mid[1] - W*.08);
+      if(S.sc[0] + S.sc[1] === 0){ c.font = `500 ${Math.round(W*.036)}px system-ui,sans-serif`; c.fillStyle = '#c3c9d6'; c.fillText('Usa il touchpad qui sotto per muovere la barra', mid[0], mid[1] + W*.06); }
+    }
+  }
+  if(waiting){
+    c.font = `600 ${Math.round(W*.05)}px system-ui,sans-serif`; c.fillStyle = '#e8ecf4';
+    c.fillText(S.ph === 'wait' ? 'Partita in pausa' : 'Sei dentro!', mid[0], mid[1] - W*.04);
+    c.font = `500 ${Math.round(W*.038)}px system-ui,sans-serif`; c.fillStyle = '#8b93a7';
+    c.fillText('In attesa dell\'altro giocatore…', mid[0], mid[1] + W*.03);
+  }
+  c.restore();
+  // logo e punteggio
+  logoHud(c, W, V.lh, V.top, now);
+  const fs = V.fs, gap = fs*.95, sy = V.top + V.lh + fs*.62;
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `700 ${fs}px "Chakra Petch", monospace`;
+  c.fillStyle = COL[me]; c.fillText(S.sc[mi], W/2 - gap, sy);
+  c.fillStyle = '#5b6275'; c.fillText(':', W/2, sy);
+  c.fillStyle = COL[opp]; c.fillText(S.sc[1 - mi], W/2 + gap, sy);
+  // touchpad
+  c.fillStyle = '#12151d'; c.fillRect(0, gh, W, H - gh); c.fillStyle = '#2a3040'; c.fillRect(0, gh, W, 1);
+  const pm = 14, px = pm, py = gh + 12, pw = W - 2*pm, ph = H - gh - 34;
+  c.strokeStyle = '#2f3649'; c.lineWidth = 1.5; c.setLineDash([4, 5]); rr(c, px, py, pw, ph, 14); c.stroke(); c.setLineDash([]);
+  c.fillStyle = COL[me] + '0a'; rr(c, px, py, pw, ph, 14); c.fill();
+  const u01 = (uOf(C.myY) - PL/2)/(FH - PL), gx = px + 12 + (pw - 24)*u01;
+  c.fillStyle = COL[me] + '59'; c.fillRect(gx - 14, py + ph - 6, 28, 3);
+  if(pad.finger){ c.fillStyle = COL[me] + '40'; c.beginPath(); c.arc(pad.finger[0], pad.finger[1], 22, 0, Math.PI*2); c.fill(); c.strokeStyle = COL[me]; c.lineWidth = 2; c.stroke(); }
+  c.font = `500 ${Math.round(Math.min(W*.034, 13))}px system-ui,sans-serif`;
+  c.fillStyle = pad.touched ? '#6e7589' : `rgba(230,233,240,${.55 + .35*Math.sin(now/400)})`;
+  c.fillText(pad.touched ? 'appoggia il dito e trascina' : 'Appoggia qui il dito e trascina', W/2, H - 12);
+  cOver(S);
+}
+let cOverKey = '';
+function cOver(S){
+  const mi = C.side === 'L' ? 0 : 1;
+  const key = S.ph === 'over' ? [S.w, S.sc.join(), S.rd.join()].join('|') : '';
+  if(key === cOverKey) return; cOverKey = key;
+  $('#cOver').classList.toggle('hidden', S.ph !== 'over');
+  if(S.ph !== 'over') return;
+  const won = S.w === C.side;
+  $('#cOverTitle').textContent = won ? 'HAI VINTO!' : 'HAI PERSO';
+  $('#cOverTitle').style.color = won ? COL[C.side] : '#8b93a7';
+  $('#cOverScore').textContent = `${S.sc[mi]} – ${S.sc[1 - mi]}`;
+  $('#cOverOpp').textContent = S.rd[1 - mi] ? 'L\'avversario vuole la rivincita!' : '';
+  $('#btnRematch').disabled = S.rd[mi];
+  $('#btnRematch').textContent = S.rd[mi] ? 'In attesa dell\'avversario…' : 'Rivincita';
+  if(won) buzz([30, 60, 30]);
+}
+function cFrame(now){
+  if(C.side && C.myY !== C.sentY && now - C.lastSentP >= 16){ cSend({t:'p', y:r4(C.myY)}); C.sentY = C.myY; C.lastSentP = now; }
+  cDraw(now);
+  requestAnimationFrame(cFrame);
+}
+function cToMenu(){ cCleanup(); history.replaceState(null, '', location.pathname + (LOCAL ? '?local' : '')); $('#codeIn').value = ''; show('home'); }
+$('#btnJoin').onclick = () => joinRoom($('#codeIn').value);
+$('#codeIn').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
+$('#codeIn').addEventListener('keydown', e => { if(e.key === 'Enter') joinRoom(e.target.value); });
+$('#btnCancel').onclick = cToMenu; $('#btnExit').onclick = cToMenu;
+$('#btnBack').onclick = () => { const r = C.room; cCleanup(); r ? joinRoom(r) : cToMenu(); };
+$('#btnRematch').onclick = () => { cSend({t:'rematch'}); $('#btnRematch').disabled = true; $('#btnRematch').textContent = 'In attesa dell\'avversario…'; };
+$('#asScreen').href = '?screen' + (LOCAL ? '&local' : '');
+addEventListener('resize', () => { if(C.side) cResize(); });
+addEventListener('pagehide', () => { if(C.connected) cSend({t:'bye'}); });
+
+// ════════════════ Avvio ════════════════
+const startRoom = (params.get('room') || '').toUpperCase();
+const isPhone = matchMedia('(pointer:coarse)').matches && !params.has('screen');
+if(/^[A-Z0-9]{4}$/.test(startRoom)){ requestAnimationFrame(cFrame); joinRoom(startRoom); }
+else if(isPhone){ requestAnimationFrame(cFrame); show('home'); }
+else startDisplay();
+</script>
+</body>
+</html>
