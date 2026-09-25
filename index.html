@@ -53,6 +53,13 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 .slot .btns{display:flex;gap:6px;flex-wrap:wrap}
 .slot .btns button{width:auto;padding:4px 10px;font-size:13px}
 .warn{font-size:13px;color:#ffcf7a;background:#231c0c;border-radius:10px;padding:8px 10px;margin-top:10px}
+.bar select{pointer-events:auto;font:inherit;font-size:14px;background:rgba(20,24,33,.92);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:6px 10px;cursor:pointer}
+.bar .tog{pointer-events:auto;background:rgba(20,24,33,.85)}
+.bar .tog.on{border-color:var(--L);color:var(--L);background:rgba(63,240,255,.1)}
+.bar .tog.R.on{border-color:var(--R);color:var(--R);background:rgba(255,77,141,.1)}
+#display .bar button{margin-left:0}
+.bar .spacer{margin-left:auto}
+.bar .spacer ~ button{margin-left:0}
 #lobbyTitle{font:800 28px/1 ui-monospace,monospace;letter-spacing:3px;color:var(--ok);margin:0 0 4px}
 @media (max-width:720px){#lobby .card{grid-template-columns:1fr;text-align:center}.slots{text-align:left}}
 </style>
@@ -63,18 +70,27 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 <section class="game hidden" id="display">
   <canvas id="dcv"></canvas>
   <div class="bar">
+    <select id="verSel" aria-label="Versione del gioco">
+      <option value="v1">Versione 1 · Classica</option>
+      <option value="v2">Versione 2 · Arena con smartphone</option>
+    </select>
     <span class="pill" id="dRoom">Stanza ----</span>
+    <button class="small" id="btnPlayers">👥 Giocatori</button>
+    <span class="spacer"></span>
+    <button class="small tog" id="btnM1" title="Tasto 1">📱 Giocatore 1</button>
+    <button class="small tog R" id="btnM2" title="Tasto 2">📱 Giocatore 2</button>
     <button class="small" id="btnFull">⛶ Schermo intero</button>
   </div>
   <div class="veil" id="lobby">
     <div class="card">
-      <div id="qrBox"><div id="qr"></div><div id="qrMissing" class="hidden">Il QR non è disponibile.<br>Usa il link o il codice.</div></div>
+      <div id="qrBox" class="v2only"><div id="qr"></div><div id="qrMissing" class="hidden">Il QR non è disponibile.<br>Usa il link o il codice.</div></div>
       <div>
         <div id="lobbyTitle">PONG ARENA</div>
         <div class="sub" id="lobbySub" style="margin:0 0 10px">Inquadra il QR con due smartphone: ognuno vedrà la partita dalla propria parte.</div>
-        <div class="code" id="dCode">----</div>
-        <div class="link" id="dLink"></div>
+        <div class="code v2only" id="dCode">----</div>
+        <div class="link v2only" id="dLink"></div>
         <div class="slots" id="slots"></div>
+        <div class="row hidden" id="resumeRow"><button class="primary" id="btnResume">Riprendi la partita</button></div>
         <div class="warn hidden" id="fileWarn">Hai aperto il file dal computer: i telefoni non possono raggiungerlo. Pubblicalo online (per esempio con Netlify Drop) e apri quel link sul PC.</div>
         <div class="warn hidden" id="netWarn"></div>
       </div>
@@ -178,10 +194,15 @@ function fitField(cv, ctx, w, h, fw, fh, top, bottom, side){
 // ════════════════ SCHERMO (PC): arbitro + visuale classica ════════════════
 const D = {
   room:'', peer:null, bc:null, conns:{},
-  players:{L:null, R:null},   // {kind:'phone'|'cpu'|'kbd', id, send, close, y, ty, lastRx, ready, rtt}
+  version:'v2',
+  slots:{v1:{L:null, R:null}, v2:{L:null, R:null}},   // giocatori di ogni versione: {kind:'phone'|'cpu'|'kbd', id, send, close, y, ty, lastRx, ready, rtt}
+  mirror:{L:false, R:false}, trail:[], lh:90, panel:{L:null, R:null},
   G:{ball:{x:FW/2, y:FH/2, vx:0, vy:0}, pend:{vx:0, vy:0}, sc:[0,0], ph:'lobby', phEnd:0, hits:0, lh:'', w:''},
   keys:{}, L:null, acc:0, lastSend:0, lastT:0
 };
+// D.players = i giocatori della versione attiva
+Object.defineProperty(D, 'players', {get(){ return D.slots[D.version]; }});
+const PH = () => D.slots.v2;   // i telefoni appartengono sempre alla versione 2
 
 function startDisplay(){
   show('display');
@@ -195,7 +216,9 @@ function startDisplay(){
   $('#fileWarn').classList.toggle('hidden', !isFile);
   if(window.qrcode){ const q = qrcode(0, 'M'); q.addData(link); q.make(); $('#qr').innerHTML = q.createSvgTag(6, 2); }
   else { $('#qr').classList.add('hidden'); $('#qrMissing').classList.remove('hidden'); }
-  renderSlots(); openRoom();
+  try{ const v = localStorage.getItem('pongarena-ver'); if(v === 'v1' || v === 'v2') D.version = v; }catch(e){}
+  $('#verSel').value = D.version;
+  applyVersionUI(); renderSlots(); openRoom();
   addEventListener('resize', dResize); dResize();
   D.lastT = performance.now(); requestAnimationFrame(dFrame);
 }
@@ -227,10 +250,10 @@ function openRoom(){
 }
 function netWarn(t){ $('#netWarn').textContent = t; $('#netWarn').classList.toggle('hidden', !t); }
 
-const sideOf = id => ['L','R'].find(s => D.players[s] && D.players[s].id === id);
+const sideOf = id => ['L','R'].find(s => PH()[s] && PH()[s].id === id);
 function join(id, send, close){
   if(sideOf(id)) return;
-  const P = D.players;
+  const P = PH();
   let side = !P.L ? 'L' : !P.R ? 'R' : P.L.kind !== 'phone' ? 'L' : P.R.kind !== 'phone' ? 'R' : null;
   if(!side){ send({t:'full'}); setTimeout(close, 300); return; }
   P[side] = {kind:'phone', id, send, close, y:FH/2, ty:FH/2, lastRx:performance.now(), ready:false, rtt:0};
@@ -239,8 +262,8 @@ function join(id, send, close){
 }
 function leave(id){
   const s = sideOf(id); if(!s) return;
-  try{ D.players[s].close(); }catch(e){}
-  D.players[s] = null; delete D.conns[id];
+  try{ PH()[s].close(); }catch(e){}
+  PH()[s] = null; delete D.conns[id];
   slotsChanged();
 }
 function addBot(side, kind){ D.players[side] = {kind, id:kind + side, send(){}, close(){}, y:FH/2, ty:FH/2, lastRx:Infinity, ready:true, rtt:0}; slotsChanged(); }
@@ -248,10 +271,10 @@ function removeBot(side){ D.players[side] = null; slotsChanged(); }
 
 function onPlayerMsg(id, m){
   const s = sideOf(id); if(!s) return;
-  const p = D.players[s]; p.lastRx = performance.now();
+  const p = PH()[s]; p.lastRx = performance.now();
   if(m.t === 'p') p.ty = clamp(+m.y, PL/2, FH - PL/2);
   else if(m.t === 'ping'){ p.send({t:'pong', ts:m.ts}); p.rtt = +m.r || 0; }
-  else if(m.t === 'rematch'){ p.ready = true; checkRematch(); }
+  else if(m.t === 'rematch'){ p.ready = true; if(D.version === 'v2') checkRematch(); }
   else if(m.t === 'bye') leave(id);
 }
 
@@ -261,12 +284,29 @@ function slotsChanged(){
   else if(G.ph === 'cd' || G.ph === 'play') G.ph = 'wait';
   renderSlots();
 }
+// ── Versioni ──
+function applyVersionUI(){
+  const v2 = D.version === 'v2';
+  document.querySelectorAll('.v2only').forEach(e => e.classList.toggle('hidden', !v2));
+  for(const id of ['#dRoom', '#btnM1', '#btnM2']) $(id).classList.toggle('hidden', !v2);
+  $('#btnPlayers').classList.toggle('hidden', v2);
+  $('#lobbyTitle').textContent = v2 ? 'PONG ARENA' : 'VERSIONE 1 · CLASSICA';
+  $('#btnM1').classList.toggle('on', D.mirror.L); $('#btnM2').classList.toggle('on', D.mirror.R);
+}
+function setVersion(v){
+  if(v === D.version) return;
+  D.version = v;
+  try{ localStorage.setItem('pongarena-ver', v); }catch(e){}
+  const G = D.G; G.ph = 'lobby'; G.sc = [0,0]; G.w = ''; G.ball = {x:FW/2, y:FH/2, vx:0, vy:0}; D.trail = [];
+  applyVersionUI(); slotsChanged(); dResize();
+  $('#verSel').blur();
+}
 function renderSlots(){
   const box = $('#slots'); box.innerHTML = '';
   for(const s of ['L','R']){
     const p = D.players[s], el = document.createElement('div');
     el.className = `slot ${s}${p ? ' on' : ''}`;
-    const st = !p ? '<span class="spin"></span> In attesa di un telefono…'
+    const st = !p ? (D.version === 'v2' ? '<span class="spin"></span> In attesa di un telefono…' : 'Libero: scegli chi gioca')
       : p.kind === 'phone' ? '📱 Telefono collegato' : p.kind === 'cpu' ? '🤖 Computer' : `⌨️ Tastiera (${s === 'L' ? 'W / S' : '↑ / ↓'})`;
     el.innerHTML = `<b>${NAME[s]}</b><div class="st">${st}</div><div class="btns"></div>`;
     const btns = el.querySelector('.btns');
@@ -275,10 +315,12 @@ function renderSlots(){
     else if(p.kind !== 'phone') mk('Rimuovi', () => removeBot(s));
     box.appendChild(el);
   }
-  const G = D.G;
-  $('#lobbySub').textContent = G.ph === 'wait'
-    ? 'Partita in pausa: manca un giocatore. Può rientrare inquadrando il QR.'
+  const G = D.G, full = D.players.L && D.players.R;
+  $('#lobbySub').textContent = D.version === 'v1'
+    ? (G.ph === 'wait' ? 'Partita in pausa. Cambia i giocatori o riprendi.' : 'Scegli chi controlla ciascuna barra: tastiera o computer.')
+    : G.ph === 'wait' ? 'Partita in pausa: manca un giocatore. Può rientrare inquadrando il QR.'
     : 'Inquadra il QR con due smartphone: ognuno vedrà la partita dalla propria parte.';
+  $('#resumeRow').classList.toggle('hidden', !(full && G.ph === 'wait'));
 }
 
 // ── Fisica (gira solo qui) ──
@@ -340,22 +382,49 @@ function movePaddles(dt){
 }
 function checkRematch(){ const {L, R} = D.players; if(D.G.ph === 'over' && L && R && L.ready && R.ready) resetGame(); }
 function sendSnap(now){
-  const G = D.G, b = G.ball, P = D.players;
+  const G = D.G, b = G.ball, P = D.version === 'v2' ? D.players : PH();
   const m = {t:'s', b:[r4(b.x), r4(b.y), r4(b.vx), r4(b.vy)], ly:r4(P.L ? P.L.y : FH/2), ry:r4(P.R ? P.R.y : FH/2),
     sc:G.sc, ph:G.ph, cd:Math.max(0, Math.round(G.phEnd - now)), w:G.w, rd:[!!(P.L && P.L.ready), !!(P.R && P.R.ready)]};
-  for(const s of ['L','R']) if(P[s] && P[s].kind === 'phone') P[s].send(m);
+  if(D.version !== 'v2'){ m.ph = 'away'; m.sc = [0,0]; m.rd = [false, false]; }
+  const T = PH(); for(const s of ['L','R']) if(T[s] && T[s].kind === 'phone') T[s].send(m);
 }
 
 // ── Disegno classico ──
 const dcv = $('#dcv'), dctx = dcv.getContext('2d');
 function dResize(){
-  D.lh = Math.round(Math.min(120, Math.max(70, innerHeight*.14)));
-  D.L = fitField(dcv, dctx, innerWidth, innerHeight, FW, FH, 14 + D.lh + 10, 20, 20);
+  const dpr = devicePixelRatio || 1, w = innerWidth, h = innerHeight;
+  dcv.width = w*dpr; dcv.height = h*dpr; dctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  D.lh = Math.round(Math.min(120, Math.max(70, h*.14)));
+  const top = 14 + D.lh + 10, bottom = 20, side = 20, avH = h - top - bottom;
+  // riquadri dei telefoni (solo versione 2)
+  const pw = Math.min(avH*.5, w*.24), show = s => D.version === 'v2' && D.mirror[s];
+  const ph = Math.min(avH, pw*1.35), py = top + (avH - ph)/2;   // proporzioni della zona di gioco del telefono
+  D.panel = {L: show('L') ? {x:side, y:py, w:pw, h:ph} : null, R: show('R') ? {x:w - side - pw, y:py, w:pw, h:ph} : null};
+  const left = side + (D.panel.L ? pw + 20 : 0), right = side + (D.panel.R ? pw + 20 : 0);
+  const s = Math.min((w - left - right)/FW, avH/FH);
+  D.L = {s, w, h, ox:left + (w - left - right - FW*s)/2, oy:top + (avH - FH*s)/2};
+  for(const k of ['L','R']) if(D.panel[k]){ const r = D.panel[k]; D.f3[k].fit(r.x, r.y, r.w, r.h, 34); }
+}
+function toggleMirror(k){
+  if(D.version !== 'v2') return;
+  D.mirror[k] = !D.mirror[k]; applyVersionUI(); dResize();
+}
+function drawMirror(c, k, now){
+  const r = D.panel[k]; if(!r) return;
+  const G = D.G, P = D.players, o = k === 'L' ? 'R' : 'L', f = D.f3[k];
+  const playing = G.ph === 'cd' || G.ph === 'play';
+  const waiting = !(P.L && P.R) || G.ph === 'lobby' || G.ph === 'wait';
+  f.draw(c, {ball:playing ? G.ball : null, trail:D.trail, myY:P[k] ? P[k].y : FH/2, oppY:P[o] ? P[o].y : FH/2, showOpp:!!P[o],
+    ph:G.ph, cd:G.phEnd - now, sc:G.sc, msg:waiting ? ['In attesa', P[k] ? 'dell\'altro giocatore…' : 'di questo giocatore…'] : null}, now);
+  c.save(); c.lineWidth = 2; c.strokeStyle = COL[k]; rr(c, r.x, r.y, r.w, r.h, 18); c.stroke();
+  c.font = `700 ${Math.round(Math.min(15, r.w*.06))}px "Chakra Petch", monospace`; c.textAlign = 'left'; c.textBaseline = 'middle';
+  c.fillStyle = COL[k]; c.fillText(`GIOCATORE ${k === 'L' ? 1 : 2} · ${NAME[k]}`, r.x + 14, r.y + 18);
+  c.restore();
 }
 function dDraw(now){
   const c = dctx, {s, ox, oy, w, h} = D.L, G = D.G, P = D.players;
   c.fillStyle = '#05070b'; c.fillRect(0, 0, w, h);
-  logoHud(c, w/2, 12, D.lh/.34, D.lh, now, `PRIMO A ${WIN}`);
+  logoHud(c, w/2, 12, D.lh/.34, D.lh, now, `${D.version === 'v1' ? 'CLASSICA' : 'ARENA'} · PRIMO A ${WIN}`);
   c.fillStyle = '#000'; c.fillRect(ox, oy, FW*s, FH*s);
   c.strokeStyle = '#2a3144'; c.lineWidth = 2; c.strokeRect(ox, oy, FW*s, FH*s);
   c.fillStyle = '#333'; for(let y = .02; y < FH; y += .06) c.fillRect(ox + FW/2*s - 2, oy + y*s, 4, .035*s);
@@ -382,6 +451,7 @@ function dDraw(now){
     const n = Math.ceil((G.phEnd - now)/1000);
     if(n > 0){ c.fillStyle = '#fff'; c.font = `800 ${Math.round(s*.16)}px ui-monospace,monospace`; c.fillText(n, ox + FW/2*s, oy + FH*.72*s); }
   }
+  drawMirror(c, 'L', now); drawMirror(c, 'R', now);
 }
 let dOverKey = '';
 function dOverlays(){
@@ -400,7 +470,8 @@ function dFrame(now){
   const dt = Math.min(.05, (now - D.lastT)/1000); D.lastT = now;
   movePaddles(dt);
   D.acc += dt; while(D.acc >= STEP){ step(STEP, now); D.acc -= STEP; }
-  for(const s of ['L','R']){ const p = D.players[s]; if(p && p.kind === 'phone' && now - p.lastRx > 6000) leave(p.id); }
+  for(const s of ['L','R']){ const p = PH()[s]; if(p && p.kind === 'phone' && now - p.lastRx > 6000) leave(p.id); }
+  if(D.G.ph === 'play'){ D.trail.push([D.G.ball.x, D.G.ball.y]); if(D.trail.length > 10) D.trail.shift(); } else D.trail = [];
   if(now - D.lastSend >= SNAP_MS){ sendSnap(now); D.lastSend = now; }
   dDraw(now); dOverlays();
   requestAnimationFrame(dFrame);
@@ -410,10 +481,15 @@ addEventListener('keydown', e => {
     D.keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = true;
     if(e.key.startsWith('Arrow')) e.preventDefault();
     if(e.key === ' ' && D.G.ph === 'over' && D.players.L && D.players.R){ e.preventDefault(); resetGame(); }
+    if(e.target.tagName !== 'SELECT'){ if(e.key === '1') toggleMirror('L'); if(e.key === '2') toggleMirror('R'); }
   }
 });
 addEventListener('keyup', e => { D.keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = false; });
 $('#btnNew').onclick = () => { if(D.players.L && D.players.R) resetGame(); };
+$('#verSel').onchange = e => setVersion(e.target.value);
+$('#btnM1').onclick = () => toggleMirror('L'); $('#btnM2').onclick = () => toggleMirror('R');
+$('#btnPlayers').onclick = () => { const G = D.G; if(G.ph === 'cd' || G.ph === 'play') G.ph = 'wait'; renderSlots(); };
+$('#btnResume').onclick = () => { if(D.players.L && D.players.R && D.G.ph === 'wait') serve(Math.random() < .5 ? 1 : -1, 3000); };
 $('#btnFull').onclick = () => { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}); };
 
 // ════════════════ TELEFONO: controller con visuale ruotata ════════════════
@@ -484,38 +560,93 @@ function cData(m){
 // u = posizione laterale (0..FH), z = profondità dalla propria barra (0..FW), h = altezza.
 const CAM = {x:FH/2, y:1.7, z:-.45, pitch:1.08}, CP = Math.cos(CAM.pitch), SP = Math.sin(CAM.pitch);
 const PADH = .05, CTRL_FRAC = .27;
+function shade(hex, f){ const n = parseInt(hex.slice(1), 16); return `rgb(${(n >> 16)*f|0},${((n >> 8) & 255)*f|0},${(n & 255)*f|0})`; }
+// Visuale 3D "Tribuna" dal lato di un giocatore. La usano i telefoni e i riquadri sul PC.
+class Field3D {
+  constructor(side){ this.side = side; this.rect = {x:0, y:0, w:1, h:1}; this.k = 1; this.ox = 0; this.oy = 0; }
+  u(y){ return this.side === 'L' ? y : FH - y; }   // y del mondo → posizione laterale (e viceversa)
+  z(x){ return this.side === 'L' ? x : FW - x; }   // x del mondo → profondità dalla propria barra
+  raw(u, h, z){ const dx = u - CAM.x, dy = h - CAM.y, dz = z - CAM.z, zc = dz*CP - dy*SP, yc = dy*CP + dz*SP; return [dx/zc, -yc/zc, zc]; }
+  P(u, h, z){ const [a, b, zc] = this.raw(u, h, z); return [this.ox + a*this.k, this.oy + b*this.k, zc]; }
+  fit(x, y, w, h, top){
+    const pts = [this.raw(0,0,0), this.raw(FH,0,0), this.raw(0,0,FW), this.raw(FH,0,FW)];
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), m = 10, sm = Math.max(10, w*.04);
+    const minY = Math.min(...ys), maxY = Math.max(...ys), minX = Math.min(...xs), maxX = Math.max(...xs);
+    this.k = Math.min((h - top - m)/(maxY - minY), (w - 2*sm)/(pts[1][0] - pts[0][0]), (w - 2*m)/(pts[3][0] - pts[2][0]));
+    this.ox = x + w/2 - (minX + maxX)/2*this.k; this.oy = y + h - m - maxY*this.k;
+    this.rect = {x, y, w, h};
+  }
+  poly(c, pts, fill, stroke){
+    c.beginPath(); pts.forEach((p, i) => { const q = this.P(...p); i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1]); });
+    c.closePath(); if(fill){ c.fillStyle = fill; c.fill(); } if(stroke){ c.strokeStyle = stroke; c.stroke(); }
+  }
+  line(c, a, b, col, w){ const p = this.P(...a), q = this.P(...b); c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); }
+  box(c, u, z, col, bright){
+    const x0 = u - PL/2, x1 = u + PL/2, z0 = z - PT/2, z1 = z + PT/2, h = PADH;
+    c.shadowColor = col; c.shadowBlur = bright ? 18 : 8;
+    if(CAM.x < x0) this.poly(c, [[x0,0,z0],[x0,h,z0],[x0,h,z1],[x0,0,z1]], shade(col, .55));
+    if(CAM.x > x1) this.poly(c, [[x1,0,z0],[x1,h,z0],[x1,h,z1],[x1,0,z1]], shade(col, .55));
+    this.poly(c, [[x0,h,z0],[x1,h,z0],[x1,h,z1],[x0,h,z1]], col);
+    this.poly(c, [[x0,0,z0],[x1,0,z0],[x1,h,z0],[x0,h,z0]], shade(col, .78));
+    c.shadowBlur = 0;
+  }
+  // st: {ball:{x,y}|null, trail:[[x,y]], myY, oppY, showOpp, ph, cd, msg:[riga1, riga2]|null, hint}
+  draw(c, st, now){
+    const {x, y, w, h} = this.rect, me = this.side, opp = me === 'L' ? 'R' : 'L';
+    c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
+    const bg = c.createLinearGradient(0, y, 0, y + h); bg.addColorStop(0, '#07080c'); bg.addColorStop(1, '#0d1018');
+    c.fillStyle = bg; c.fillRect(x, y, w, h);
+    const hz = this.P(FH/2, 0, FW), glow = c.createRadialGradient(hz[0], hz[1], 0, hz[0], hz[1], w*.8);
+    glow.addColorStop(0, COL[opp] + '29'); glow.addColorStop(1, COL[opp] + '00');
+    c.fillStyle = glow; c.fillRect(x, y, w, h);
+    this.poly(c, [[0,0,0],[FH,0,0],[FH,0,FW],[0,0,FW]], '#0b0f17');
+    for(let z = .2; z < FW; z += .2) this.line(c, [0,0,z], [FH,0,z], 'rgba(90,110,150,.16)', 1);
+    for(const u of [.25, .5, .75]) this.line(c, [u,0,0], [u,0,FW], 'rgba(90,110,150,.12)', 1);
+    for(let u = 0; u < FH; u += .08) this.line(c, [u + .01,0,FW/2], [u + .05,0,FW/2], 'rgba(200,210,235,.45)', 2);
+    const wh = .035;
+    this.poly(c, [[0,0,0],[0,wh,0],[0,wh,FW],[0,0,FW]], 'rgba(120,130,160,.10)');
+    this.poly(c, [[FH,0,0],[FH,wh,0],[FH,wh,FW],[FH,0,FW]], 'rgba(120,130,160,.10)');
+    this.line(c, [0,wh,0], [0,wh,FW], 'rgba(170,180,210,.55)', 2); this.line(c, [FH,wh,0], [FH,wh,FW], 'rgba(170,180,210,.55)', 2);
+    this.line(c, [0,0,FW], [FH,0,FW], COL[opp] + '80', 2); this.line(c, [0,0,0], [FH,0,0], COL[me] + '80', 2);
+    const drawBall = () => {
+      if(!st.ball) return;
+      const u = this.u(st.ball.y), z = this.z(st.ball.x);
+      const sh = this.P(u, 0, z), b = this.P(u, BR, z), r = Math.max(2, BR*this.k/b[2]);
+      c.fillStyle = 'rgba(0,0,0,.55)'; c.beginPath(); c.ellipse(sh[0], sh[1], r*1.1, r*.45, 0, 0, Math.PI*2); c.fill();
+      (st.trail || []).forEach(([tx, ty], i, a) => { const q = this.P(this.u(ty), BR, this.z(tx)); c.fillStyle = `rgba(255,255,255,${i/a.length*.18})`; c.beginPath(); c.arc(q[0], q[1], r*.7, 0, Math.PI*2); c.fill(); });
+      const g = c.createRadialGradient(b[0] - r*.35, b[1] - r*.35, r*.1, b[0], b[1], r);
+      g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#b9c2d6');
+      c.fillStyle = g; c.shadowColor = '#fff'; c.shadowBlur = 10; c.beginPath(); c.arc(b[0], b[1], r, 0, Math.PI*2); c.fill(); c.shadowBlur = 0;
+    };
+    if(st.showOpp) this.box(c, this.u(st.oppY), FW - PX, COL[opp], false);
+    const bz = st.ball ? this.z(st.ball.x) : 1;
+    if(bz > PX){ drawBall(); this.box(c, this.u(st.myY), PX, COL[me], true); }
+    else { this.box(c, this.u(st.myY), PX, COL[me], true); drawBall(); }
+    const mid = this.P(FH/2, 0, FW/2);
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    if(st.ph === 'cd' && st.cd > 0){
+      c.fillStyle = '#fff'; c.font = `700 ${Math.round(w*.16)}px "Chakra Petch", monospace`; c.fillText(Math.ceil(st.cd/1000), mid[0], mid[1] - w*.08);
+      if(st.hint){ c.font = `500 ${Math.round(w*.036)}px system-ui,sans-serif`; c.fillStyle = '#c3c9d6'; c.fillText(st.hint, mid[0], mid[1] + w*.06); }
+    }
+    if(st.msg){
+      c.font = `600 ${Math.round(w*.05)}px system-ui,sans-serif`; c.fillStyle = '#e8ecf4'; c.fillText(st.msg[0], mid[0], mid[1] - w*.04);
+      c.font = `500 ${Math.round(w*.038)}px system-ui,sans-serif`; c.fillStyle = '#8b93a7'; c.fillText(st.msg[1], mid[0], mid[1] + w*.03);
+    }
+    c.restore();
+  }
+}
+D.f3 = {L:new Field3D('L'), R:new Field3D('R')};
 let V = null, pad = {id:null, lx:0, finger:null, touched:false};
-const uOf = y => C.side === 'L' ? y : FH - y;               // y del mondo → u locale (vale anche all'inverso)
-const zOf = x => C.side === 'L' ? x : FW - x;               // x del mondo → profondità
-function raw(u, h, z){ const dx = u - CAM.x, dy = h - CAM.y, dz = z - CAM.z, zc = dz*CP - dy*SP, yc = dy*CP + dz*SP; return [dx/zc, -yc/zc, zc]; }
-function P3(u, h, z){ const [a, b, zc] = raw(u, h, z); return [V.ox + a*V.k, V.oy + b*V.k, zc]; }
+const uOf = y => C.side === 'L' ? y : FH - y;
 function cResize(){
   const dpr = devicePixelRatio || 1, w = innerWidth, h = innerHeight;
   ccv.width = w*dpr; ccv.height = h*dpr; cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const bar = document.querySelector('#ctrl .bar').getBoundingClientRect();
   const top = Math.max(44, bar.bottom + 4), gh = h*(1 - CTRL_FRAC);
   const fs = Math.round(Math.min(w*.1, 40)), lh = Math.min(w*.24, gh*.15);
-  const fieldTop = top + lh + fs*1.25, m = 10;
-  const pts = [raw(0,0,0), raw(FH,0,0), raw(0,0,FW), raw(FH,0,FW)];
-  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
-  const minY = Math.min(...ys), maxY = Math.max(...ys), minX = Math.min(...xs), maxX = Math.max(...xs);
-  const k = Math.min((gh - fieldTop - m)/(maxY - minY), (w - 32)/(pts[1][0] - pts[0][0]), (w - 2*m)/(pts[3][0] - pts[2][0]));
-  V = {w, h, gh, k, fs, lh, top, ox:w/2 - (minX + maxX)/2*k, oy:gh - m - maxY*k};
-}
-function poly3(c, pts, fill, stroke){
-  c.beginPath(); pts.forEach((p, i) => { const q = P3(...p); i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1]); });
-  c.closePath(); if(fill){ c.fillStyle = fill; c.fill(); } if(stroke){ c.strokeStyle = stroke; c.stroke(); }
-}
-function line3(c, a, b, col, w){ const p = P3(...a), q = P3(...b); c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); }
-function shade(hex, f){ const n = parseInt(hex.slice(1), 16); return `rgb(${(n >> 16)*f|0},${((n >> 8) & 255)*f|0},${(n & 255)*f|0})`; }
-function box3(c, u, z, col, bright){
-  const x0 = u - PL/2, x1 = u + PL/2, z0 = z - PT/2, z1 = z + PT/2, h = PADH;
-  c.shadowColor = col; c.shadowBlur = bright ? 18 : 8;
-  if(CAM.x < x0) poly3(c, [[x0,0,z0],[x0,h,z0],[x0,h,z1],[x0,0,z1]], shade(col, .55));
-  if(CAM.x > x1) poly3(c, [[x1,0,z0],[x1,h,z0],[x1,h,z1],[x1,0,z1]], shade(col, .55));
-  poly3(c, [[x0,h,z0],[x1,h,z0],[x1,h,z1],[x0,h,z1]], col);
-  poly3(c, [[x0,0,z0],[x1,0,z0],[x1,h,z0],[x0,h,z0]], shade(col, .78));
-  c.shadowBlur = 0;
+  const fieldTop = top + lh + fs*1.25;
+  C.f3 = new Field3D(C.side); C.f3.fit(0, 0, w, gh, fieldTop);
+  V = {w, h, gh, fs, lh, top};
 }
 function rr(c, x, y, w, h, r){ c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 
@@ -576,61 +707,19 @@ function cDraw(now){
   c.fillStyle = '#05070b'; c.fillRect(0, 0, W, H);
   if(!S || !C.side) return;
   const me = C.side, opp = me === 'L' ? 'R' : 'L', mi = me === 'L' ? 0 : 1;
-  const bg = c.createLinearGradient(0, 0, 0, gh); bg.addColorStop(0, '#07080c'); bg.addColorStop(1, '#0d1018');
-  c.fillStyle = bg; c.fillRect(0, 0, W, gh);
-  c.save(); c.beginPath(); c.rect(0, 0, W, gh); c.clip();
-  const hz = P3(FH/2, 0, FW), glow = c.createRadialGradient(hz[0], hz[1], 0, hz[0], hz[1], W*.8);
-  glow.addColorStop(0, COL[opp] + '29'); glow.addColorStop(1, COL[opp] + '00');
-  c.fillStyle = glow; c.fillRect(0, 0, W, gh);
-  // campo
-  poly3(c, [[0,0,0],[FH,0,0],[FH,0,FW],[0,0,FW]], '#0b0f17');
-  for(let z = .2; z < FW; z += .2) line3(c, [0,0,z], [FH,0,z], 'rgba(90,110,150,.16)', 1);
-  for(const u of [.25, .5, .75]) line3(c, [u,0,0], [u,0,FW], 'rgba(90,110,150,.12)', 1);
-  for(let u = 0; u < FH; u += .08) line3(c, [u + .01,0,FW/2], [u + .05,0,FW/2], 'rgba(200,210,235,.45)', 2);
-  const wh = .035;
-  poly3(c, [[0,0,0],[0,wh,0],[0,wh,FW],[0,0,FW]], 'rgba(120,130,160,.10)');
-  poly3(c, [[FH,0,0],[FH,wh,0],[FH,wh,FW],[FH,0,FW]], 'rgba(120,130,160,.10)');
-  line3(c, [0,wh,0], [0,wh,FW], 'rgba(170,180,210,.55)', 2); line3(c, [FH,wh,0], [FH,wh,FW], 'rgba(170,180,210,.55)', 2);
-  line3(c, [0,0,FW], [FH,0,FW], COL[opp] + '80', 2); line3(c, [0,0,0], [FH,0,0], COL[me] + '80', 2);
-  // barre e pallina
-  const waiting = S.ph === 'lobby' || S.ph === 'wait';
   C.oppDraw += ((me === 'L' ? S.ry : S.ly) - C.oppDraw) * .45;
-  const drawBall = () => {
-    if(!(S.ph === 'cd' || S.ph === 'play')) return;
+  const away = S.ph === 'away', waiting = S.ph === 'lobby' || S.ph === 'wait' || away;
+  let ball = null;
+  if(S.ph === 'cd' || S.ph === 'play'){
     const p = predictBall(now);
     if(!C.ballDraw || S.ph !== 'play' || Math.hypot(p.x - C.ballDraw.x, p.y - C.ballDraw.y) > .15) C.ballDraw = {x:p.x, y:p.y, tr:[]};
     else { C.ballDraw.x += (p.x - C.ballDraw.x)*.5; C.ballDraw.y += (p.y - C.ballDraw.y)*.5; }
-    const bd = C.ballDraw; bd.tr = (bd.tr || []).concat([[bd.x, bd.y]]).slice(-10);
-    const u = uOf(bd.y), z = zOf(bd.x);
-    const sh = P3(u, 0, z), b = P3(u, BR, z), r = Math.max(2, BR*V.k/b[2]);
-    c.fillStyle = 'rgba(0,0,0,.55)'; c.beginPath(); c.ellipse(sh[0], sh[1], r*1.1, r*.45, 0, 0, Math.PI*2); c.fill();
-    bd.tr.forEach(([x, y], i) => { const q = P3(uOf(y), BR, zOf(x)); c.fillStyle = `rgba(255,255,255,${i/bd.tr.length*.18})`; c.beginPath(); c.arc(q[0], q[1], r*.7, 0, Math.PI*2); c.fill(); });
-    const g = c.createRadialGradient(b[0] - r*.35, b[1] - r*.35, r*.1, b[0], b[1], r);
-    g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#b9c2d6');
-    c.fillStyle = g; c.shadowColor = '#fff'; c.shadowBlur = 10; c.beginPath(); c.arc(b[0], b[1], r, 0, Math.PI*2); c.fill(); c.shadowBlur = 0;
-    return z;
-  };
-  if(!waiting) box3(c, uOf(C.oppDraw), FW - PX, COL[opp], false);
-  const bz = C.ballDraw ? zOf(C.ballDraw.x) : 1;
-  if(bz > PX){ drawBall(); box3(c, uOf(C.myY), PX, COL[me], true); }
-  else { box3(c, uOf(C.myY), PX, COL[me], true); drawBall(); }
-  // scritte al centro del campo
-  const mid = P3(FH/2, 0, FW/2);
-  c.textAlign = 'center'; c.textBaseline = 'middle';
-  if(S.ph === 'cd'){
-    const cd = S.cd - (now - C.snapT);
-    if(cd > 0){
-      c.fillStyle = '#fff'; c.font = `700 ${Math.round(W*.16)}px "Chakra Petch", monospace`; c.fillText(Math.ceil(cd/1000), mid[0], mid[1] - W*.08);
-      if(S.sc[0] + S.sc[1] === 0){ c.font = `500 ${Math.round(W*.036)}px system-ui,sans-serif`; c.fillStyle = '#c3c9d6'; c.fillText('Usa il touchpad qui sotto per muovere la barra', mid[0], mid[1] + W*.06); }
-    }
+    C.ballDraw.tr = C.ballDraw.tr.concat([[C.ballDraw.x, C.ballDraw.y]]).slice(-10);
+    ball = C.ballDraw;
   }
-  if(waiting){
-    c.font = `600 ${Math.round(W*.05)}px system-ui,sans-serif`; c.fillStyle = '#e8ecf4';
-    c.fillText(S.ph === 'wait' ? 'Partita in pausa' : 'Sei dentro!', mid[0], mid[1] - W*.04);
-    c.font = `500 ${Math.round(W*.038)}px system-ui,sans-serif`; c.fillStyle = '#8b93a7';
-    c.fillText('In attesa dell\'altro giocatore…', mid[0], mid[1] + W*.03);
-  }
-  c.restore();
+  C.f3.draw(c, {ball, trail:ball ? ball.tr : [], myY:C.myY, oppY:C.oppDraw, showOpp:!waiting, ph:S.ph, cd:S.cd - (now - C.snapT),
+    hint:S.sc[0] + S.sc[1] === 0 ? 'Usa il touchpad qui sotto per muovere la barra' : '',
+    msg:away ? ['Partita in pausa sullo schermo', 'È attiva un\'altra versione del gioco'] : waiting ? [S.ph === 'wait' ? 'Partita in pausa' : 'Sei dentro!', 'In attesa dell\'altro giocatore…'] : null}, now);
   // logo e punteggio
   logoHud(c, W/2, V.top, V.lh/.34, V.lh, now, `${NAME[C.side]} · PRIMO A ${WIN}`);
   const fs = V.fs, gap = fs*.95, sy = V.top + V.lh + fs*.62;
