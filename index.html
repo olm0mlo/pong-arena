@@ -58,6 +58,43 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 .bar .tog.on{border-color:var(--L);color:var(--L);background:rgba(63,240,255,.1)}
 .bar .tog.R.on{border-color:var(--R);color:var(--R);background:rgba(255,77,141,.1)}
 #display .bar button{margin-left:0}
+#lobby .card.solo{grid-template-columns:1fr;width:min(560px,100%)}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.mode{font:800 40px/1 ui-monospace,Menlo,monospace;padding:20px 12px;border:2px solid var(--line);border-radius:14px;background:var(--panel2);text-align:center}
+.mode small{display:block;font:500 13px/1.4 system-ui,sans-serif;color:var(--muted);margin-top:10px}
+.mode[data-mode="1"]{color:var(--L)} .mode[data-mode="2"]{color:var(--R)}
+.mode[data-mode="1"]:hover,.mode[data-mode="1"]:focus-visible{border-color:var(--L)}
+.mode[data-mode="2"]:hover,.mode[data-mode="2"]:focus-visible{border-color:var(--R)}
+/* negozio */
+.shopcard{width:min(720px,100%)}
+.shopcols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.shopcol{border:2px solid var(--line);border-radius:14px;padding:12px;text-align:left}
+.shopcol.L{border-color:var(--L)} .shopcol.R{border-color:var(--R)}
+.shopcol b{font:800 14px ui-monospace,monospace;letter-spacing:2px}
+.shopcol.L b{color:var(--L)} .shopcol.R b{color:var(--R)}
+.shopcol canvas{position:static;display:block;width:100%;height:64px;margin:8px 0}
+.shopcol .st{font-size:14px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.shopcol .st strong{color:var(--text);font-variant-numeric:tabular-nums}
+.ok{color:var(--ok)!important}
+#cShop{align-items:stretch;padding:calc(52px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom));background:rgba(5,7,11,.92)}
+.shopbox{display:flex;flex-direction:column;gap:10px;width:100%;max-width:520px;margin:0 auto;min-height:0}
+.shophead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.shophead b{font:800 22px ui-monospace,monospace;letter-spacing:3px;color:#ffcf7a}
+.shophead span{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.shopgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow:auto;min-height:0;flex:1}
+.skin{position:relative;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:8px;display:flex;flex-direction:column;gap:4px}
+.skin.eq{border-color:var(--me,#3ff0ff)}
+.skin canvas{position:static;display:block;width:100%;height:48px}
+.skin .nm{font-weight:700;font-size:14px}
+.skin .ds{font-size:11.5px;color:var(--muted);line-height:1.3;min-height:30px}
+.skin button{padding:8px;font-size:14px;font-weight:700}
+.skin button.price{background:linear-gradient(180deg,#ffcf3d,#ff9d00);color:#2a1600;border:none}
+.skin .badge{position:absolute;top:-8px;right:8px;background:#ff4d6d;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px}
+.shopfoot{display:flex;flex-direction:column;gap:6px}
+#shopOpp{font-size:13px;color:var(--muted);text-align:center;min-height:18px}
+#cToast{position:fixed;left:50%;top:calc(96px + env(safe-area-inset-top));transform:translateX(-50%);background:#202638;border:1px solid #ffcf7a;color:var(--text);padding:10px 14px;border-radius:12px;font-size:14px;z-index:20;white-space:nowrap}
+#btnPause.on{border-color:#ffcf7a;color:#ffcf7a}
+.pausebig{font:800 64px/1 ui-monospace,Menlo,monospace;letter-spacing:10px}
 .bar .spacer{margin-left:auto}
 .bar .spacer ~ button{margin-left:0}
 #lobbyTitle{font:800 28px/1 ui-monospace,monospace;letter-spacing:3px;color:var(--ok);margin:0 0 4px}
@@ -73,9 +110,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
     <select id="verSel" aria-label="Versione del gioco">
       <option value="v1">Versione 1 · Classica</option>
       <option value="v2">Versione 2 · Arena con smartphone</option>
+      <option value="v3">Versione 3 · Skin a pagamento</option>
     </select>
     <span class="pill" id="dRoom">Stanza ----</span>
-    <button class="small" id="btnPlayers">👥 Giocatori</button>
+    <button class="small" id="btnPlayers">👥 1P / 2P</button>
+    <button class="small hidden" id="btnPause" title="Tasto P">⏸ Pausa</button>
     <span class="spacer"></span>
     <button class="small tog" id="btnM1" title="Tasto 1">📱 Giocatore 1</button>
     <button class="small tog R" id="btnM2" title="Tasto 2">📱 Giocatore 2</button>
@@ -89,11 +128,27 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
         <div class="sub" id="lobbySub" style="margin:0 0 10px">Inquadra il QR con due smartphone: ognuno vedrà la partita dalla propria parte.</div>
         <div class="code v2only" id="dCode">----</div>
         <div class="link v2only" id="dLink"></div>
-        <div class="slots" id="slots"></div>
+        <div class="slots v2only" id="slots"></div>
+        <div class="modes v1only" id="modeRow">
+          <button class="mode" data-mode="1">1P<small>contro il computer<br>W / S oppure ↑ / ↓</small></button>
+          <button class="mode" data-mode="2">2P<small>due giocatori sulla stessa tastiera<br>sinistra W / S · destra ↑ / ↓</small></button>
+        </div>
         <div class="row hidden" id="resumeRow"><button class="primary" id="btnResume">Riprendi la partita</button></div>
         <div class="warn hidden" id="fileWarn">Hai aperto il file dal computer: i telefoni non possono raggiungerlo. Pubblicalo online (per esempio con Netlify Drop) e apri quel link sul PC.</div>
         <div class="warn hidden" id="netWarn"></div>
       </div>
+    </div>
+  </div>
+  <div class="veil hidden" id="dShop">
+    <div class="card shopcard">
+      <div class="big" style="color:#ffcf7a">NEGOZIO APERTO</div>
+      <div class="sub" style="margin:0">I giocatori scelgono e comprano le skin sui loro telefoni. La partita parte quando entrambi sono pronti.</div>
+      <div class="shopcols">
+        <div class="shopcol L"><b>SINISTRA</b><canvas id="dsLcv"></canvas><div class="st" id="dsL"></div></div>
+        <div class="shopcol R"><b>DESTRA</b><canvas id="dsRcv"></canvas><div class="st" id="dsR"></div></div>
+      </div>
+      <div class="sub" id="dsTot" style="margin:0 0 12px"></div>
+      <button id="btnForce">▶ Inizia subito</button>
     </div>
   </div>
   <div class="veil hidden" id="dOver">
@@ -141,6 +196,17 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
     <span class="pill" id="cPing">📶 – ms</span>
     <button class="small" id="btnExit">Esci</button>
   </div>
+  <div class="veil hidden" id="cShop">
+    <div class="shopbox">
+      <div class="shophead"><b>NEGOZIO</b><span id="shopSpent"></span></div>
+      <div class="shopgrid" id="shopGrid"></div>
+      <div class="shopfoot">
+        <div id="shopOpp"></div>
+        <button class="primary" id="btnShopReady">SONO PRONTO ▶</button>
+      </div>
+    </div>
+  </div>
+  <div id="cToast" class="hidden"></div>
   <div class="veil hidden" id="cOver">
     <div class="card">
       <div class="big" id="cOverTitle"></div>
@@ -191,17 +257,113 @@ function fitField(cv, ctx, w, h, fw, fh, top, bottom, side){
   return {s, w, h, ox:(w - fw*s)/2, oy:top + (h - top - bottom - fh*s)/2};
 }
 
+// ════════════════ Skin a pagamento (versione 3) ════════════════
+// Ogni skin è una "texture" lunga e sottile, con le stesse proporzioni della barra (PL : PT).
+// La parte alta della texture punta sempre verso l'avversario. Sopra e sotto c'è un margine
+// (TPAD) per le parti che sporgono, come il naso.
+const SKINS = {
+  base:   {name:'Base',           price:0,    desc:'La barra di serie'},
+  rgb:    {name:'Arcobaleno',     price:2.49, desc:'Il colore cambia in continuazione'},
+  hotdog: {name:'Hot dog',        price:2.99, desc:'Con senape'},
+  baffi:  {name:'Baffoni',        price:3.49, desc:'Naso e baffi'},
+  oro:    {name:'Lingotto d\'oro', price:3.99, desc:'Oro 999,9 che luccica', badge:'Edizione limitata'},
+  aura:   {name:'AURA',           price:4.99, desc:'Lo striscione più ambito', badge:'🔥 La più scelta'}
+};
+const SKIN_ORDER = ['base', 'rgb', 'hotdog', 'baffi', 'oro', 'aura'];
+const TW = 240, TH = 28, TPAD = 22;
+const eur = n => n.toLocaleString('it-IT', {style:'currency', currency:'EUR'});
+const texCache = {};
+function skinGlow(id, now){
+  return {rgb:`hsl(${(now/6) % 360},95%,60%)`, hotdog:'#ffb347', baffi:'#d98a67', oro:'#ffd23a', aura:'#b44dff'}[id] || '#ffffff';
+}
+function skinTex(id, now){
+  let t = texCache[id];
+  if(!t){ const cv = document.createElement('canvas'); cv.width = TW; cv.height = TH + 2*TPAD; t = texCache[id] = {cv, ctx:cv.getContext('2d'), at:-1}; }
+  const animated = id === 'rgb' || id === 'oro' || id === 'aura';
+  if(t.at < 0 || (animated && t.at !== now)){
+    const c = t.ctx; c.clearRect(0, 0, TW, TH + 2*TPAD); c.save(); c.translate(0, TPAD); paintSkin(c, id, now); c.restore(); t.at = now;
+  }
+  return t;
+}
+function paintSkin(c, id, now){
+  c.lineJoin = 'round'; c.lineCap = 'round';
+  if(id === 'rgb'){
+    const g = c.createLinearGradient(0, 0, TW, 0);
+    for(let i = 0; i <= 6; i++) g.addColorStop(i/6, `hsl(${(now/6 + i*60) % 360},95%,60%)`);
+    rr(c, 0, 0, TW, TH, TH/2); c.fillStyle = g; c.fill();
+    c.fillStyle = 'rgba(255,255,255,.4)'; rr(c, 10, 3, TW - 20, 6, 3); c.fill();
+  } else if(id === 'hotdog'){
+    let g = c.createLinearGradient(0, 0, 0, TH); g.addColorStop(0, '#f6c982'); g.addColorStop(1, '#b36a28');
+    rr(c, 10, 0, TW - 20, TH, TH/2); c.fillStyle = g; c.fill(); c.strokeStyle = 'rgba(90,45,10,.55)'; c.lineWidth = 1.5; c.stroke();
+    g = c.createLinearGradient(0, TH*.22, 0, TH*.78); g.addColorStop(0, '#e46a4c'); g.addColorStop(1, '#8a2716');
+    rr(c, 0, TH*.24, TW, TH*.52, TH*.26); c.fillStyle = g; c.fill();
+    c.fillStyle = 'rgba(255,255,255,.28)'; rr(c, 8, TH*.3, TW - 16, 3, 1.5); c.fill();
+    c.strokeStyle = '#ffd23a'; c.lineWidth = 3; c.beginPath();
+    for(let x = 16, i = 0; x <= TW - 16; x += 10, i++){ const y = TH/2 + (i % 2 ? -4 : 4); i ? c.lineTo(x, y) : c.moveTo(x, y); }
+    c.stroke();
+  } else if(id === 'baffi'){
+    c.fillStyle = '#3b2314';
+    for(const d of [-1, 1]){
+      const cx = TW/2; c.beginPath(); c.moveTo(cx, TH*.5);
+      c.bezierCurveTo(cx + d*40, TH*.05, cx + d*88, TH*1.05, cx + d*110, TH*.4);
+      c.bezierCurveTo(cx + d*118, TH*.05, cx + d*108, -TH*.35, cx + d*96, TH*.05);
+      c.bezierCurveTo(cx + d*84, TH*.6, cx + d*42, TH*1.05, cx, TH*1.0);
+      c.closePath(); c.fill();
+    }
+    c.strokeStyle = 'rgba(255,255,255,.18)'; c.lineWidth = 1.5;
+    for(const d of [-1, 1]){ c.beginPath(); c.moveTo(TW/2 + d*14, TH*.55); c.quadraticCurveTo(TW/2 + d*55, TH*.4, TW/2 + d*85, TH*.7); c.stroke(); }
+    const ng = c.createRadialGradient(TW/2 - 7, -6, 2, TW/2, 2, 24); ng.addColorStop(0, '#ffd4b6'); ng.addColorStop(1, '#d5805f');
+    c.fillStyle = ng; c.beginPath(); c.ellipse(TW/2, 1, 19, 18, 0, 0, Math.PI*2); c.fill();
+    c.strokeStyle = 'rgba(120,50,30,.5)'; c.lineWidth = 1.2; c.stroke();
+    c.fillStyle = '#6b2e22'; c.beginPath(); c.ellipse(TW/2 - 7, 13, 4, 2.4, 0, 0, Math.PI*2); c.ellipse(TW/2 + 7, 13, 4, 2.4, 0, 0, Math.PI*2); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.ellipse(TW/2 - 6, -8, 5, 3, -.4, 0, Math.PI*2); c.fill();
+  } else if(id === 'oro'){
+    const g = c.createLinearGradient(0, 0, 0, TH); g.addColorStop(0, '#fff6c2'); g.addColorStop(.45, '#ffd23a'); g.addColorStop(1, '#a8740a');
+    c.beginPath(); c.moveTo(12, 0); c.lineTo(TW - 12, 0); c.lineTo(TW, TH); c.lineTo(0, TH); c.closePath();
+    c.fillStyle = g; c.fill(); c.strokeStyle = '#8a5a00'; c.lineWidth = 1.5; c.stroke();
+    c.fillStyle = 'rgba(110,70,0,.75)'; c.font = '700 12px ui-monospace,monospace'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('FINE GOLD · 999,9', TW/2, TH/2 + 1);
+    c.save(); c.globalCompositeOperation = 'source-atop';
+    const sx = ((now/1400) % 1.8 - .4)*TW, sg = c.createLinearGradient(sx - 28, 0, sx + 28, 0);
+    sg.addColorStop(0, 'rgba(255,255,255,0)'); sg.addColorStop(.5, 'rgba(255,255,255,.85)'); sg.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = sg; c.fillRect(0, 0, TW, TH); c.restore();
+  } else if(id === 'aura'){
+    const g = c.createLinearGradient(0, 0, TW, 0); g.addColorStop(0, '#4b17b8'); g.addColorStop(.5, '#b44dff'); g.addColorStop(1, '#4b17b8');
+    c.beginPath(); c.moveTo(0, 0); c.lineTo(TW, 0); c.lineTo(TW - 14, TH/2); c.lineTo(TW, TH); c.lineTo(0, TH); c.lineTo(14, TH/2); c.closePath();
+    c.fillStyle = g; c.fill(); c.strokeStyle = '#ffd23a'; c.lineWidth = 2; c.stroke();
+    c.font = '22px "Michroma", sans-serif'; c.textBaseline = 'middle'; c.fillStyle = '#ffffff';
+    c.shadowColor = '#e7b8ff'; c.shadowBlur = 6 + 4*Math.sin(now/250);
+    spaced(c, 'AURA', TW/2, TH/2 + 1, 9); c.shadowBlur = 0;
+    c.fillStyle = '#ffd23a'; c.font = '14px system-ui,sans-serif'; c.textAlign = 'center';
+    const tw = 1 + .25*Math.sin(now/180);
+    c.save(); c.translate(38, TH/2); c.scale(tw, tw); c.fillText('✦', 0, 1); c.restore();
+    c.save(); c.translate(TW - 38, TH/2); c.scale(2 - tw, 2 - tw); c.fillText('✦', 0, 1); c.restore();
+  }
+}
+// disegna la skin in un riquadro (anteprime del negozio)
+function drawSkinPreview(cv, id, now, col){
+  const dpr = devicePixelRatio || 1, r = cv.getBoundingClientRect();
+  if(cv.width !== Math.round(r.width*dpr)){ cv.width = Math.round(r.width*dpr); cv.height = Math.round(r.height*dpr); }
+  const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, r.width, r.height);
+  const k = Math.min((r.width - 16)/TW, r.height/(TH + 2*TPAD));
+  c.save(); c.translate(r.width/2, r.height/2); c.scale(k, k);
+  if(id === 'base'){ c.fillStyle = col || '#3ff0ff'; c.shadowColor = col || '#3ff0ff'; c.shadowBlur = 10; rr(c, -TW/2, -TH/2, TW, TH, 4); c.fill(); }
+  else { c.shadowColor = skinGlow(id, now); c.shadowBlur = 12; c.drawImage(skinTex(id, now).cv, -TW/2, -TH/2 - TPAD); }
+  c.restore();
+}
+
 // ════════════════ SCHERMO (PC): arbitro + visuale classica ════════════════
 const D = {
   room:'', peer:null, bc:null, conns:{},
-  version:'v2',
-  slots:{v1:{L:null, R:null}, v2:{L:null, R:null}},   // giocatori di ogni versione: {kind:'phone'|'cpu'|'kbd', id, send, close, y, ty, lastRx, ready, rtt}
+  version:'v1',
+  slots:{v1:{L:null, R:null}, v2:{L:null, R:null}},   // la v3 usa gli stessi telefoni della v2 (vedi sotto)   // giocatori di ogni versione: {kind:'phone'|'cpu'|'kbd', id, send, close, y, ty, lastRx, ready, rtt}
   mirror:{L:false, R:false}, trail:[], lh:90, panel:{L:null, R:null},
   G:{ball:{x:FW/2, y:FH/2, vx:0, vy:0}, pend:{vx:0, vy:0}, sc:[0,0], ph:'lobby', phEnd:0, hits:0, lh:'', w:''},
   keys:{}, L:null, acc:0, lastSend:0, lastT:0
 };
 // D.players = i giocatori della versione attiva
 Object.defineProperty(D, 'players', {get(){ return D.slots[D.version]; }});
+D.slots.v3 = D.slots.v2;
 const PH = () => D.slots.v2;   // i telefoni appartengono sempre alla versione 2
 
 function startDisplay(){
@@ -216,7 +378,6 @@ function startDisplay(){
   $('#fileWarn').classList.toggle('hidden', !isFile);
   if(window.qrcode){ const q = qrcode(0, 'M'); q.addData(link); q.make(); $('#qr').innerHTML = q.createSvgTag(6, 2); }
   else { $('#qr').classList.add('hidden'); $('#qrMissing').classList.remove('hidden'); }
-  try{ const v = localStorage.getItem('pongarena-ver'); if(v === 'v1' || v === 'v2') D.version = v; }catch(e){}
   $('#verSel').value = D.version;
   applyVersionUI(); renderSlots(); openRoom();
   addEventListener('resize', dResize); dResize();
@@ -256,7 +417,8 @@ function join(id, send, close){
   const P = PH();
   let side = !P.L ? 'L' : !P.R ? 'R' : P.L.kind !== 'phone' ? 'L' : P.R.kind !== 'phone' ? 'R' : null;
   if(!side){ send({t:'full'}); setTimeout(close, 300); return; }
-  P[side] = {kind:'phone', id, send, close, y:FH/2, ty:FH/2, lastRx:performance.now(), ready:false, rtt:0};
+  P[side] = {kind:'phone', id, send, close, y:FH/2, ty:FH/2, lastRx:performance.now(), ready:false, rtt:0,
+    owned:['base'], skin:'base', spent:0, buys:0, shopReady:false};
   send({t:'role', side});
   slotsChanged();
 }
@@ -266,7 +428,13 @@ function leave(id){
   PH()[s] = null; delete D.conns[id];
   slotsChanged();
 }
-function addBot(side, kind){ D.players[side] = {kind, id:kind + side, send(){}, close(){}, y:FH/2, ty:FH/2, lastRx:Infinity, ready:true, rtt:0}; slotsChanged(); }
+function mkBot(kind, side, any){ return {kind, any:!!any, id:kind + side, send(){}, close(){}, y:FH/2, ty:FH/2, lastRx:Infinity, ready:true, rtt:0,
+  owned:['base'], skin:'base', spent:0, buys:0, shopReady:true}; }
+function chooseMode(n){
+  D.slots.v1 = n === 1 ? {L:mkBot('kbd', 'L', true), R:mkBot('cpu', 'R')} : {L:mkBot('kbd', 'L'), R:mkBot('kbd', 'R')};
+  slotsChanged();
+}
+function addBot(side, kind){ D.players[side] = mkBot(kind, side); slotsChanged(); }
 function removeBot(side){ D.players[side] = null; slotsChanged(); }
 
 function onPlayerMsg(id, m){
@@ -274,20 +442,28 @@ function onPlayerMsg(id, m){
   const p = PH()[s]; p.lastRx = performance.now();
   if(m.t === 'p') p.ty = clamp(+m.y, PL/2, FH - PL/2);
   else if(m.t === 'ping'){ p.send({t:'pong', ts:m.ts}); p.rtt = +m.r || 0; }
-  else if(m.t === 'rematch'){ p.ready = true; if(D.version === 'v2') checkRematch(); }
+  else if(m.t === 'rematch'){ p.ready = true; if(D.version !== 'v1') checkRematch(); }
+  else if(m.t === 'buy' && SKINS[m.id] && !p.owned.includes(m.id) && D.version === 'v3'){
+    p.owned.push(m.id); p.spent = Math.round((p.spent + SKINS[m.id].price)*100)/100; p.buys++; p.skin = m.id;
+  }
+  else if(m.t === 'equip' && p.owned.includes(m.id)) p.skin = m.id;
+  else if(m.t === 'sready' && D.G.ph === 'shop'){ p.shopReady = true; checkShop(); }
   else if(m.t === 'bye') leave(id);
 }
 
 function slotsChanged(){
   const G = D.G, full = D.players.L && D.players.R;
-  if(full){ if(G.ph === 'lobby') resetGame(); else if(G.ph === 'wait') serve(Math.random() < .5 ? 1 : -1, 3000); }
-  else if(G.ph === 'cd' || G.ph === 'play') G.ph = 'wait';
+  if(full){ if(G.ph === 'lobby') newMatch(); else if(G.ph === 'wait') serve(Math.random() < .5 ? 1 : -1, 3000); }
+  else if(G.ph === 'cd' || G.ph === 'play'){ G.ph = 'wait'; G.paused = false; }
+  else if(G.ph === 'shop') G.ph = 'lobby';
   renderSlots();
 }
 // ── Versioni ──
 function applyVersionUI(){
-  const v2 = D.version === 'v2';
+  const v2 = D.version !== 'v1';
   document.querySelectorAll('.v2only').forEach(e => e.classList.toggle('hidden', !v2));
+  document.querySelectorAll('.v1only').forEach(e => e.classList.toggle('hidden', v2));
+  $('#lobby .card').classList.toggle('solo', !v2);
   for(const id of ['#dRoom', '#btnM1', '#btnM2']) $(id).classList.toggle('hidden', !v2);
   $('#btnPlayers').classList.toggle('hidden', v2);
   $('#lobbyTitle').textContent = v2 ? 'PONG ARENA' : 'VERSIONE 1 · CLASSICA';
@@ -296,8 +472,7 @@ function applyVersionUI(){
 function setVersion(v){
   if(v === D.version) return;
   D.version = v;
-  try{ localStorage.setItem('pongarena-ver', v); }catch(e){}
-  const G = D.G; G.ph = 'lobby'; G.sc = [0,0]; G.w = ''; G.ball = {x:FW/2, y:FH/2, vx:0, vy:0}; D.trail = [];
+  const G = D.G; G.ph = 'lobby'; G.sc = [0,0]; G.w = ''; G.ball = {x:FW/2, y:FH/2, vx:0, vy:0}; G.paused = false; D.trail = [];
   applyVersionUI(); slotsChanged(); dResize();
   $('#verSel').blur();
 }
@@ -306,7 +481,7 @@ function renderSlots(){
   for(const s of ['L','R']){
     const p = D.players[s], el = document.createElement('div');
     el.className = `slot ${s}${p ? ' on' : ''}`;
-    const st = !p ? (D.version === 'v2' ? '<span class="spin"></span> In attesa di un telefono…' : 'Libero: scegli chi gioca')
+    const st = !p ? (D.version !== 'v1' ? '<span class="spin"></span> In attesa di un telefono…' : 'Libero: scegli chi gioca')
       : p.kind === 'phone' ? '📱 Telefono collegato' : p.kind === 'cpu' ? '🤖 Computer' : `⌨️ Tastiera (${s === 'L' ? 'W / S' : '↑ / ↓'})`;
     el.innerHTML = `<b>${NAME[s]}</b><div class="st">${st}</div><div class="btns"></div>`;
     const btns = el.querySelector('.btns');
@@ -317,15 +492,20 @@ function renderSlots(){
   }
   const G = D.G, full = D.players.L && D.players.R;
   $('#lobbySub').textContent = D.version === 'v1'
-    ? (G.ph === 'wait' ? 'Partita in pausa. Cambia i giocatori o riprendi.' : 'Scegli chi controlla ciascuna barra: tastiera o computer.')
+    ? 'Scegli come giocare. Vince chi arriva per primo a 3 punti.'
     : G.ph === 'wait' ? 'Partita in pausa: manca un giocatore. Può rientrare inquadrando il QR.'
     : 'Inquadra il QR con due smartphone: ognuno vedrà la partita dalla propria parte.';
-  $('#resumeRow').classList.toggle('hidden', !(full && G.ph === 'wait'));
+  $('#resumeRow').classList.toggle('hidden', !(full && G.ph === 'wait') || D.version === 'v1');
 }
 
 // ── Fisica (gira solo qui) ──
+function togglePause(){
+  const G = D.G, now = performance.now();
+  if(!G.paused){ if(G.ph !== 'cd' && G.ph !== 'play') return; G.paused = true; G.pauseT = now; }
+  else { G.paused = false; if(G.ph === 'cd') G.phEnd += now - G.pauseT; }
+}
 function resetGame(){
-  const G = D.G; G.sc = [0,0]; G.w = ''; G.hits = 0;
+  const G = D.G; G.sc = [0,0]; G.w = ''; G.hits = 0; G.paused = false;
   for(const s of ['L','R']) if(D.players[s]) D.players[s].ready = D.players[s].kind !== 'phone';
   serve(Math.random() < .5 ? 1 : -1, 3000);
 }
@@ -354,6 +534,7 @@ function scorePoint(side){
 }
 function step(dt, now){
   const G = D.G;
+  if(G.paused) return;
   if(G.ph === 'cd'){ if(now >= G.phEnd){ G.ph = 'play'; G.ball.vx = G.pend.vx; G.ball.vy = G.pend.vy; } return; }
   if(G.ph !== 'play') return;
   const b = G.ball, x0 = b.x, Lp = D.players.L, Rp = D.players.R;
@@ -367,11 +548,13 @@ function step(dt, now){
 }
 function movePaddles(dt){
   const G = D.G;
+  if(G.paused) return;
   for(const s of ['L','R']){
     const p = D.players[s]; if(!p) continue;
     if(p.kind === 'phone') p.y += (p.ty - p.y) * Math.min(1, dt*30);
     else if(p.kind === 'kbd'){
-      const up = s === 'L' ? D.keys.w : D.keys.ArrowUp, dn = s === 'L' ? D.keys.s : D.keys.ArrowDown;
+      const up = p.any ? D.keys.w || D.keys.ArrowUp : s === 'L' ? D.keys.w : D.keys.ArrowUp;
+      const dn = p.any ? D.keys.s || D.keys.ArrowDown : s === 'L' ? D.keys.s : D.keys.ArrowDown;
       p.y = clamp(p.y + ((dn ? 1 : 0) - (up ? 1 : 0)) * 1.4 * dt, PL/2, FH - PL/2);
     } else {
       const coming = s === 'L' ? G.ball.vx < 0 : G.ball.vx > 0;
@@ -380,15 +563,27 @@ function movePaddles(dt){
     }
   }
 }
-function checkRematch(){ const {L, R} = D.players; if(D.G.ph === 'over' && L && R && L.ready && R.ready) resetGame(); }
+function checkRematch(){ const {L, R} = D.players; if(D.G.ph === 'over' && L && R && L.ready && R.ready) newMatch(); }
+// nuova partita: nella v3 si passa prima dal negozio
+function newMatch(){ D.version === 'v3' ? enterShop() : resetGame(); }
+function enterShop(){
+  const G = D.G; G.ph = 'shop'; G.sc = [0,0]; G.w = ''; G.paused = false; G.ball = {x:FW/2, y:FH/2, vx:0, vy:0};
+  for(const s of ['L','R']){ const p = D.players[s]; if(p){ p.shopReady = p.kind !== 'phone'; p.ready = p.kind !== 'phone'; } }
+}
+function checkShop(){ const {L, R} = D.players; if(D.G.ph === 'shop' && L && R && L.shopReady && R.shopReady) resetGame(); }
 function sendSnap(now){
-  const G = D.G, b = G.ball, P = D.version === 'v2' ? D.players : PH();
+  const G = D.G, b = G.ball, P = D.version !== 'v1' ? D.players : PH();
   const m = {t:'s', b:[r4(b.x), r4(b.y), r4(b.vx), r4(b.vy)], ly:r4(P.L ? P.L.y : FH/2), ry:r4(P.R ? P.R.y : FH/2),
-    sc:G.sc, ph:G.ph, cd:Math.max(0, Math.round(G.phEnd - now)), w:G.w, rd:[!!(P.L && P.L.ready), !!(P.R && P.R.ready)]};
-  if(D.version !== 'v2'){ m.ph = 'away'; m.sc = [0,0]; m.rd = [false, false]; }
+    sc:G.sc, ph:G.ph, cd:Math.max(0, Math.round(G.phEnd - (G.paused ? G.pauseT : now))), w:G.w, rd:[!!(P.L && P.L.ready), !!(P.R && P.R.ready)]};
+  if(G.paused){ m.pz = 1; m.b[2] = m.b[3] = 0; }
+  m.v = D.version; m.sk = [skinOf('L'), skinOf('R')];
+  if(D.version === 'v3') m.shop = {ow:[P.L ? P.L.owned : [], P.R ? P.R.owned : []], sp:[P.L ? P.L.spent : 0, P.R ? P.R.spent : 0],
+    sr:[!!(P.L && P.L.shopReady), !!(P.R && P.R.shopReady)]};
+  if(D.version === 'v1'){ m.ph = 'away'; m.sc = [0,0]; m.rd = [false, false]; }
   const T = PH(); for(const s of ['L','R']) if(T[s] && T[s].kind === 'phone') T[s].send(m);
 }
 
+function skinOf(side){ const p = D.players[side]; return D.version === 'v3' && p && p.skin ? p.skin : 'base'; }
 // ── Disegno classico ──
 const dcv = $('#dcv'), dctx = dcv.getContext('2d');
 function dResize(){
@@ -397,7 +592,7 @@ function dResize(){
   D.lh = Math.round(Math.min(120, Math.max(70, h*.14)));
   const top = 14 + D.lh + 10, bottom = 20, side = 20, avH = h - top - bottom;
   // riquadri dei telefoni (solo versione 2)
-  const pw = Math.min(avH*.5, w*.24), show = s => D.version === 'v2' && D.mirror[s];
+  const pw = Math.min(avH*.5, w*.24), show = s => D.version !== 'v1' && D.mirror[s];
   const ph = Math.min(avH, pw*1.35), py = top + (avH - ph)/2;   // proporzioni della zona di gioco del telefono
   D.panel = {L: show('L') ? {x:side, y:py, w:pw, h:ph} : null, R: show('R') ? {x:w - side - pw, y:py, w:pw, h:ph} : null};
   const left = side + (D.panel.L ? pw + 20 : 0), right = side + (D.panel.R ? pw + 20 : 0);
@@ -406,16 +601,18 @@ function dResize(){
   for(const k of ['L','R']) if(D.panel[k]){ const r = D.panel[k]; D.f3[k].fit(r.x, r.y, r.w, r.h, 34); }
 }
 function toggleMirror(k){
-  if(D.version !== 'v2') return;
+  if(D.version === 'v1') return;
   D.mirror[k] = !D.mirror[k]; applyVersionUI(); dResize();
 }
 function drawMirror(c, k, now){
   const r = D.panel[k]; if(!r) return;
   const G = D.G, P = D.players, o = k === 'L' ? 'R' : 'L', f = D.f3[k];
   const playing = G.ph === 'cd' || G.ph === 'play';
-  const waiting = !(P.L && P.R) || G.ph === 'lobby' || G.ph === 'wait';
+  const waiting = !(P.L && P.R) || G.ph === 'lobby' || G.ph === 'wait' || G.ph === 'shop';
   f.draw(c, {ball:playing ? G.ball : null, trail:D.trail, myY:P[k] ? P[k].y : FH/2, oppY:P[o] ? P[o].y : FH/2, showOpp:!!P[o],
-    ph:G.ph, cd:G.phEnd - now, sc:G.sc, msg:waiting ? ['In attesa', P[k] ? 'dell\'altro giocatore…' : 'di questo giocatore…'] : null}, now);
+    ph:G.ph, cd:G.phEnd - (G.paused ? G.pauseT : now), sc:G.sc,
+    mySkin:skinOf(k), oppSkin:skinOf(o),
+    msg:G.ph === 'shop' ? ['Negozio aperto', 'Sta scegliendo la skin…'] : waiting ? ['In attesa', P[k] ? 'dell\'altro giocatore…' : 'di questo giocatore…'] : G.paused ? ['Pausa', 'La partita è ferma'] : null}, now);
   c.save(); c.lineWidth = 2; c.strokeStyle = COL[k]; rr(c, r.x, r.y, r.w, r.h, 18); c.stroke();
   c.font = `700 ${Math.round(Math.min(15, r.w*.06))}px "Chakra Petch", monospace`; c.textAlign = 'left'; c.textBaseline = 'middle';
   c.fillStyle = COL[k]; c.fillText(`GIOCATORE ${k === 'L' ? 1 : 2} · ${NAME[k]}`, r.x + 14, r.y + 18);
@@ -424,7 +621,7 @@ function drawMirror(c, k, now){
 function dDraw(now){
   const c = dctx, {s, ox, oy, w, h} = D.L, G = D.G, P = D.players;
   c.fillStyle = '#05070b'; c.fillRect(0, 0, w, h);
-  logoHud(c, w/2, 12, D.lh/.34, D.lh, now, `${D.version === 'v1' ? 'CLASSICA' : 'ARENA'} · PRIMO A ${WIN}`);
+  logoHud(c, w/2, 12, D.lh/.34, D.lh, now, `${{v1:'CLASSICA', v2:'ARENA', v3:'SKIN SHOP'}[D.version]} · PRIMO A ${WIN}`);
   c.fillStyle = '#000'; c.fillRect(ox, oy, FW*s, FH*s);
   c.strokeStyle = '#2a3144'; c.lineWidth = 2; c.strokeRect(ox, oy, FW*s, FH*s);
   c.fillStyle = '#333'; for(let y = .02; y < FH; y += .06) c.fillRect(ox + FW/2*s - 2, oy + y*s, 4, .035*s);
@@ -435,11 +632,18 @@ function dDraw(now){
   c.font = `600 ${Math.round(s*.028)}px system-ui,sans-serif`; c.fillStyle = '#8b93a7';
   for(const [side, x] of [['L', .36], ['R', .64]]){
     const p = P[side]; if(!p) continue;
-    const tag = p.kind === 'phone' ? `📱 ${p.rtt ? Math.round(p.rtt) + ' ms' : ''}` : p.kind === 'cpu' ? '🤖 computer' : '⌨️ tastiera';
+    let tag = p.kind === 'phone' ? `📱 ${p.rtt ? Math.round(p.rtt) + ' ms' : ''}` : p.kind === 'cpu' ? '🤖 computer' : '⌨️ tastiera';
+    if(D.version === 'v3' && p.spent) tag += ` · 💶 ${eur(p.spent)}`;
     c.fillText(tag, ox + FW*x*s, oy + .25*s);
   }
   const pad = (side, y) => {
-    const x = side === 'L' ? PX : FW - PX;
+    const x = side === 'L' ? PX : FW - PX, sk = skinOf(side);
+    if(sk !== 'base'){
+      const tex = skinTex(sk, now), k = PL*s/TW;
+      c.save(); c.shadowColor = skinGlow(sk, now); c.shadowBlur = 14;
+      c.translate(ox + x*s, oy + y*s); c.rotate(side === 'L' ? Math.PI/2 : -Math.PI/2); c.scale(k, k);
+      c.drawImage(tex.cv, -TW/2, -TH/2 - TPAD); c.restore(); return;
+    }
     c.fillStyle = COL[side]; c.shadowColor = COL[side]; c.shadowBlur = 14;
     c.fillRect(ox + (x - PT/2)*s, oy + (y - PL/2)*s, PT*s, PL*s); c.shadowBlur = 0;
   };
@@ -447,15 +651,39 @@ function dDraw(now){
   if(G.ph === 'cd' || G.ph === 'play'){
     c.fillStyle = '#fff'; c.fillRect(ox + (G.ball.x - BR)*s, oy + (G.ball.y - BR)*s, BR*2*s, BR*2*s);
   }
+  const tnow = G.paused ? G.pauseT : now;
   if(G.ph === 'cd'){
-    const n = Math.ceil((G.phEnd - now)/1000);
+    const n = Math.ceil((G.phEnd - tnow)/1000);
     if(n > 0){ c.fillStyle = '#fff'; c.font = `800 ${Math.round(s*.16)}px ui-monospace,monospace`; c.fillText(n, ox + FW/2*s, oy + FH*.72*s); }
+  }
+  if(G.paused){
+    c.fillStyle = 'rgba(5,7,11,.6)'; c.fillRect(ox, oy, FW*s, FH*s);
+    c.fillStyle = '#ffcf7a'; c.font = `800 ${Math.round(s*.13)}px ui-monospace,monospace`; c.fillText('PAUSA', ox + FW/2*s, oy + FH*.45*s);
+    c.fillStyle = '#c3c9d6'; c.font = `500 ${Math.round(s*.034)}px system-ui,sans-serif`; c.fillText('Premi P o ▶ Riprendi per continuare', ox + FW/2*s, oy + FH*.58*s);
   }
   drawMirror(c, 'L', now); drawMirror(c, 'R', now);
 }
 let dOverKey = '';
+let dShopKey = '';
+function dShopUI(now){
+  const G = D.G, P = D.players, on = G.ph === 'shop' && P.L && P.R;
+  $('#dShop').classList.toggle('hidden', !on);
+  if(!on){ dShopKey = ''; return; }
+  for(const s of ['L','R']) drawSkinPreview($(`#ds${s}cv`), P[s].skin, now, COL[s]);
+  const key = ['L','R'].map(s => [P[s].skin, P[s].spent, P[s].shopReady, P[s].kind].join()).join('|');
+  if(key === dShopKey) return; dShopKey = key;
+  for(const s of ['L','R']){
+    const p = P[s], who = p.kind === 'phone' ? '' : p.kind === 'cpu' ? ' (computer)' : ' (tastiera)';
+    $(`#ds${s}`).innerHTML = `<span>${SKINS[p.skin].name}${who}</span><span>Speso <strong>${eur(p.spent)}</strong></span>` +
+      `<span class="${p.shopReady ? 'ok' : ''}">${p.shopReady ? '✓ Pronto' : '🛒 Nel negozio…'}</span><span>${p.buys} acquisti</span>`;
+  }
+  const tot = (P.L.spent || 0) + (P.R.spent || 0);
+  $('#dsTot').textContent = `Totale speso finora: ${eur(tot)} (denaro finto)`;
+}
 function dOverlays(){
-  const G = D.G, P = D.players;
+  const G = D.G, P = D.players, bp = $('#btnPause'), live = G.ph === 'cd' || G.ph === 'play';
+  bp.classList.toggle('hidden', !live); bp.classList.toggle('on', !!G.paused);
+  const lbl = G.paused ? '▶ Riprendi' : '⏸ Pausa'; if(bp.textContent !== lbl) bp.textContent = lbl;
   $('#lobby').classList.toggle('hidden', !(G.ph === 'lobby' || G.ph === 'wait'));
   const key = G.ph === 'over' ? [G.w, G.sc.join(), P.L && P.L.ready, P.R && P.R.ready].join('|') : '';
   if(key === dOverKey) return; dOverKey = key;
@@ -473,22 +701,25 @@ function dFrame(now){
   for(const s of ['L','R']){ const p = PH()[s]; if(p && p.kind === 'phone' && now - p.lastRx > 6000) leave(p.id); }
   if(D.G.ph === 'play'){ D.trail.push([D.G.ball.x, D.G.ball.y]); if(D.trail.length > 10) D.trail.shift(); } else D.trail = [];
   if(now - D.lastSend >= SNAP_MS){ sendSnap(now); D.lastSend = now; }
-  dDraw(now); dOverlays();
+  dDraw(now); dOverlays(); dShopUI(now);
   requestAnimationFrame(dFrame);
 }
 addEventListener('keydown', e => {
   if(!$('#display').classList.contains('hidden')){
     D.keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = true;
     if(e.key.startsWith('Arrow')) e.preventDefault();
-    if(e.key === ' ' && D.G.ph === 'over' && D.players.L && D.players.R){ e.preventDefault(); resetGame(); }
-    if(e.target.tagName !== 'SELECT'){ if(e.key === '1') toggleMirror('L'); if(e.key === '2') toggleMirror('R'); }
+    if(e.key === ' ' && D.G.ph === 'over' && D.players.L && D.players.R){ e.preventDefault(); newMatch(); }
+    if(e.target.tagName !== 'SELECT'){ if(e.key === '1') toggleMirror('L'); if(e.key === '2') toggleMirror('R'); if(e.key === 'p' || e.key === 'P') togglePause(); }
   }
 });
 addEventListener('keyup', e => { D.keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = false; });
-$('#btnNew').onclick = () => { if(D.players.L && D.players.R) resetGame(); };
+$('#btnNew').onclick = () => { if(D.players.L && D.players.R) newMatch(); };
+$('#btnForce').onclick = () => { if(D.players.L && D.players.R && D.G.ph === 'shop') resetGame(); };
 $('#verSel').onchange = e => setVersion(e.target.value);
 $('#btnM1').onclick = () => toggleMirror('L'); $('#btnM2').onclick = () => toggleMirror('R');
-$('#btnPlayers').onclick = () => { const G = D.G; if(G.ph === 'cd' || G.ph === 'play') G.ph = 'wait'; renderSlots(); };
+$('#btnPlayers').onclick = () => { D.slots.v1 = {L:null, R:null}; const G = D.G; G.ph = 'lobby'; G.sc = [0,0]; G.w = ''; G.paused = false; renderSlots(); $('#btnPlayers').blur(); };
+$('#btnPause').onclick = () => { togglePause(); $('#btnPause').blur(); };
+document.querySelectorAll('.mode').forEach(b => b.onclick = () => chooseMode(+b.dataset.mode));
 $('#btnResume').onclick = () => { if(D.players.L && D.players.R && D.G.ph === 'wait') serve(Math.random() < .5 ? 1 : -1, 3000); };
 $('#btnFull').onclick = () => { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}); };
 
@@ -581,8 +812,26 @@ class Field3D {
     c.closePath(); if(fill){ c.fillStyle = fill; c.fill(); } if(stroke){ c.strokeStyle = stroke; c.stroke(); }
   }
   line(c, a, b, col, w){ const p = this.P(...a), q = this.P(...b); c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); }
-  box(c, u, z, col, bright){
+  texQuad(c, tex, A, B, Cc, dark, coreOnly){
+    const p = this.P(...A), q = this.P(...B), r = this.P(...Cc);
+    c.save(); c.transform((q[0] - p[0])/TW, (q[1] - p[1])/TW, (r[0] - p[0])/TH, (r[1] - p[1])/TH, p[0], p[1]);
+    if(coreOnly) c.drawImage(tex.cv, 0, TPAD, TW, TH, 0, 0, TW, TH); else c.drawImage(tex.cv, 0, -TPAD);
+    if(dark){ c.shadowBlur = 0; c.fillStyle = `rgba(0,0,0,${dark})`; c.fillRect(0, 0, TW, TH); }
+    c.restore();
+  }
+  box(c, u, z, col, bright, skin, now, flip){
     const x0 = u - PL/2, x1 = u + PL/2, z0 = z - PT/2, z1 = z + PT/2, h = PADH;
+    if(skin && skin !== 'base'){
+      const tex = skinTex(skin, now);
+      c.shadowBlur = 0;
+      if(CAM.x < x0) this.poly(c, [[x0,0,z0],[x0,h,z0],[x0,h,z1],[x0,0,z1]], 'rgba(15,15,22,.95)');
+      if(CAM.x > x1) this.poly(c, [[x1,0,z0],[x1,h,z0],[x1,h,z1],[x1,0,z1]], 'rgba(15,15,22,.95)');
+      this.texQuad(c, tex, [x0,h,z0], [x1,h,z0], [x0,0,z0], .45, true);
+      c.shadowColor = skinGlow(skin, now); c.shadowBlur = bright ? 16 : 8;
+      if(flip) this.texQuad(c, tex, [x1,h,z0], [x0,h,z0], [x1,h,z1]);
+      else this.texQuad(c, tex, [x0,h,z1], [x1,h,z1], [x0,h,z0]);
+      c.shadowBlur = 0; return;
+    }
     c.shadowColor = col; c.shadowBlur = bright ? 18 : 8;
     if(CAM.x < x0) this.poly(c, [[x0,0,z0],[x0,h,z0],[x0,h,z1],[x0,0,z1]], shade(col, .55));
     if(CAM.x > x1) this.poly(c, [[x1,0,z0],[x1,h,z0],[x1,h,z1],[x1,0,z1]], shade(col, .55));
@@ -618,10 +867,10 @@ class Field3D {
       g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#b9c2d6');
       c.fillStyle = g; c.shadowColor = '#fff'; c.shadowBlur = 10; c.beginPath(); c.arc(b[0], b[1], r, 0, Math.PI*2); c.fill(); c.shadowBlur = 0;
     };
-    if(st.showOpp) this.box(c, this.u(st.oppY), FW - PX, COL[opp], false);
+    if(st.showOpp) this.box(c, this.u(st.oppY), FW - PX, COL[opp], false, st.oppSkin, now, true);
     const bz = st.ball ? this.z(st.ball.x) : 1;
-    if(bz > PX){ drawBall(); this.box(c, this.u(st.myY), PX, COL[me], true); }
-    else { this.box(c, this.u(st.myY), PX, COL[me], true); drawBall(); }
+    if(bz > PX){ drawBall(); this.box(c, this.u(st.myY), PX, COL[me], true, st.mySkin, now); }
+    else { this.box(c, this.u(st.myY), PX, COL[me], true, st.mySkin, now); drawBall(); }
     const mid = this.P(FH/2, 0, FW/2);
     c.textAlign = 'center'; c.textBaseline = 'middle';
     if(st.ph === 'cd' && st.cd > 0){
@@ -708,7 +957,7 @@ function cDraw(now){
   if(!S || !C.side) return;
   const me = C.side, opp = me === 'L' ? 'R' : 'L', mi = me === 'L' ? 0 : 1;
   C.oppDraw += ((me === 'L' ? S.ry : S.ly) - C.oppDraw) * .45;
-  const away = S.ph === 'away', waiting = S.ph === 'lobby' || S.ph === 'wait' || away;
+  const away = S.ph === 'away', waiting = S.ph === 'lobby' || S.ph === 'wait' || S.ph === 'shop' || away;
   let ball = null;
   if(S.ph === 'cd' || S.ph === 'play'){
     const p = predictBall(now);
@@ -717,9 +966,10 @@ function cDraw(now){
     C.ballDraw.tr = C.ballDraw.tr.concat([[C.ballDraw.x, C.ballDraw.y]]).slice(-10);
     ball = C.ballDraw;
   }
-  C.f3.draw(c, {ball, trail:ball ? ball.tr : [], myY:C.myY, oppY:C.oppDraw, showOpp:!waiting, ph:S.ph, cd:S.cd - (now - C.snapT),
+  C.f3.draw(c, {ball, trail:ball ? ball.tr : [], myY:C.myY, oppY:C.oppDraw, showOpp:!waiting || S.ph === 'shop', ph:S.ph, cd:S.cd - (now - C.snapT),
+    mySkin:S.sk ? S.sk[mi] : 'base', oppSkin:S.sk ? S.sk[1 - mi] : 'base',
     hint:S.sc[0] + S.sc[1] === 0 ? 'Usa il touchpad qui sotto per muovere la barra' : '',
-    msg:away ? ['Partita in pausa sullo schermo', 'È attiva un\'altra versione del gioco'] : waiting ? [S.ph === 'wait' ? 'Partita in pausa' : 'Sei dentro!', 'In attesa dell\'altro giocatore…'] : null}, now);
+    msg:S.pz ? ['Partita in pausa', 'Riprenderà dallo schermo'] : away ? ['Partita in pausa sullo schermo', 'È attiva un\'altra versione del gioco'] : waiting ? [S.ph === 'wait' ? 'Partita in pausa' : 'Sei dentro!', 'In attesa dell\'altro giocatore…'] : null}, now);
   // logo e punteggio
   logoHud(c, W/2, V.top, V.lh/.34, V.lh, now, `${NAME[C.side]} · PRIMO A ${WIN}`);
   const fs = V.fs, gap = fs*.95, sy = V.top + V.lh + fs*.62;
@@ -738,7 +988,48 @@ function cDraw(now){
   c.font = `500 ${Math.round(Math.min(W*.034, 13))}px system-ui,sans-serif`;
   c.fillStyle = pad.touched ? '#6e7589' : `rgba(230,233,240,${.55 + .35*Math.sin(now/400)})`;
   c.fillText(pad.touched ? 'appoggia il dito e trascina' : 'Appoggia qui il dito e trascina', W/2, H - 12);
-  cOver(S);
+  cOver(S); cShop(S, now);
+}
+// ── Negozio sul telefono ──
+let shopKey = '', shopBuilt = false, toastT = 0;
+function cToast(t){ const el = $('#cToast'); el.textContent = t; el.classList.remove('hidden'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.add('hidden'), 2200); }
+function buildShop(){
+  const grid = $('#shopGrid'); grid.innerHTML = '';
+  for(const id of SKIN_ORDER){
+    const k = SKINS[id], el = document.createElement('div'); el.className = 'skin'; el.dataset.id = id;
+    el.innerHTML = `${k.badge ? `<span class="badge">${k.badge}</span>` : ''}<canvas></canvas><div class="nm">${k.name}</div><div class="ds">${k.desc}</div><button></button>`;
+    el.querySelector('button').onclick = () => {
+      const S = C.snap; if(!S || !S.shop) return;
+      const owned = S.shop.ow[C.side === 'L' ? 0 : 1];
+      if(owned.includes(id)) cSend({t:'equip', id});
+      else { cSend({t:'buy', id}); buzz(30); cToast(`Acquisto completato · ${eur(k.price)} (finti)`); }
+    };
+    grid.appendChild(el);
+  }
+  shopBuilt = true;
+}
+function cShop(S, now){
+  const on = S.ph === 'shop' && S.v === 'v3' && S.shop;
+  $('#cShop').classList.toggle('hidden', !on);
+  if(!on){ shopKey = ''; return; }
+  if(!shopBuilt) buildShop();
+  const mi = C.side === 'L' ? 0 : 1, owned = S.shop.ow[mi], eq = S.sk[mi];
+  document.querySelectorAll('#shopGrid .skin').forEach(el => drawSkinPreview(el.querySelector('canvas'), el.dataset.id, now, COL[C.side]));
+  const key = [owned.join(), eq, S.shop.sp[mi], S.shop.sr.join()].join('|');
+  if(key === shopKey) return; shopKey = key;
+  $('#shopGrid').style.setProperty('--me', COL[C.side]);
+  document.querySelectorAll('#shopGrid .skin').forEach(el => {
+    const id = el.dataset.id, b = el.querySelector('button'), has = owned.includes(id);
+    el.classList.toggle('eq', eq === id);
+    b.className = has ? '' : 'price';
+    b.textContent = eq === id ? 'In uso ✓' : has ? 'Usa' : eur(SKINS[id].price);
+    b.disabled = eq === id;
+  });
+  $('#shopSpent').textContent = `Hai speso ${eur(S.shop.sp[mi])} (finti)`;
+  const meReady = S.shop.sr[mi], oppReady = S.shop.sr[1 - mi];
+  $('#btnShopReady').disabled = meReady;
+  $('#btnShopReady').textContent = meReady ? 'In attesa dell\'avversario…' : 'SONO PRONTO ▶';
+  $('#shopOpp').textContent = oppReady ? 'L\'avversario è pronto!' : 'L\'avversario sta guardando il negozio…';
 }
 let cOverKey = '';
 function cOver(S){
@@ -767,6 +1058,7 @@ $('#codeIn').addEventListener('input', e => { e.target.value = e.target.value.to
 $('#codeIn').addEventListener('keydown', e => { if(e.key === 'Enter') joinRoom(e.target.value); });
 $('#btnCancel').onclick = cToMenu; $('#btnExit').onclick = cToMenu;
 $('#btnBack').onclick = () => { const r = C.room; cCleanup(); r ? joinRoom(r) : cToMenu(); };
+$('#btnShopReady').onclick = () => { cSend({t:'sready'}); $('#btnShopReady').disabled = true; };
 $('#btnRematch').onclick = () => { cSend({t:'rematch'}); $('#btnRematch').disabled = true; $('#btnRematch').textContent = 'In attesa dell\'avversario…'; };
 $('#asScreen').href = '?screen' + (LOCAL ? '&local' : '');
 addEventListener('resize', () => { if(C.side) cResize(); });
