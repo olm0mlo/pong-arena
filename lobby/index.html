@@ -1,0 +1,1012 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#07080c">
+<title>Pong Arena · Lobby</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Michroma&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07080c;--p1:#0e131e;--p2:#0a0d14;--p3:#0e121b;--ln:#1a2130;--ln2:#243047;--ln3:#2d3749;--tx:#e8f4ff;--mu:#8d9bb0;--mu2:#c9d3e0;--cy:#3ff0ff;--pk:#ff4d8d;--pk2:#ff8fb6;--gd:#ffc94d;--gm:#5cf2ff;--gr:#5dffa0;--tr:#1d2433}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font-family:'Chakra Petch',system-ui,sans-serif;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+button{font-family:inherit;cursor:pointer;color:inherit;border:none;background:none;padding:0}
+button:disabled{cursor:default}
+.mi{font-family:Michroma,sans-serif}
+.hidden{display:none!important}
+#app{position:fixed;inset:0;max-width:480px;margin:0 auto;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+/* barra risorse */
+.top{flex-shrink:0;height:calc(62px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 10px 0;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--ln);background:var(--p2)}
+.me{display:flex;align-items:center;gap:6px}
+.lvbox{width:36px;height:36px;border-radius:9px;border:2px solid var(--cy);display:flex;align-items:center;justify-content:center;font-family:Michroma,sans-serif;font-size:14px;color:var(--cy);box-shadow:0 0 10px rgba(63,240,255,.35)}
+.xp{width:46px;height:5px;border-radius:3px;background:var(--tr);overflow:hidden;margin-top:4px}.xp i{display:block;height:100%;background:var(--cy)}
+.pill{display:flex;align-items:center;gap:4px;height:30px;padding:0 8px;border-radius:15px;background:#121724;border:1px solid #232b3c;font-size:13px;font-weight:700;white-space:nowrap}
+.pill.g{padding-right:0}
+.plus{width:30px;height:30px;border-radius:15px;background:var(--pk);color:#1a0610;font-size:20px;font-weight:700;line-height:1}
+.sp{flex-grow:1}
+/* contenuto */
+#main{flex-grow:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.col{display:flex;flex-direction:column;gap:12px;padding:12px 12px 22px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.h{font-family:Michroma,sans-serif;font-size:13px;letter-spacing:.06em}
+.hrow{display:flex;justify-content:space-between;align-items:baseline}
+.small{font-size:12px;color:var(--mu)}
+.tab{font-variant-numeric:tabular-nums}
+.card{border-radius:12px;border:1px solid var(--ln2);background:var(--p1);color:var(--tx);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:6px;position:relative;text-align:center}
+.badge{position:absolute;top:-1px;left:-1px;right:-1px;font-size:10px;font-weight:700;padding:3px 2px;border-radius:12px 12px 0 0;background:var(--pk);color:#1a0610}
+.bar{height:7px;border-radius:4px;background:var(--tr);overflow:hidden}.bar i{display:block;height:100%}
+.bigbtn{border-radius:11px;font-size:15px;font-weight:700;height:48px}
+/* arena */
+.offer{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;border:1px solid var(--pk);background:#1a0b14;text-align:left;box-shadow:0 0 16px rgba(255,77,141,.25)}
+.oico{width:44px;height:44px;border-radius:10px;background:#2a0f1e;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.comet{border-radius:3px;background:linear-gradient(90deg,#fff6d6,#ffc94d,#ff7a3d);box-shadow:0 0 10px #ffc94d}
+.show{position:relative;height:250px;border-radius:14px;border:1px solid var(--ln);background:var(--p2);overflow:hidden}
+.show .tl{position:absolute;top:12px;left:14px;font-family:Michroma,sans-serif;font-size:11px;letter-spacing:.18em;color:var(--cy)}
+.show .tr{position:absolute;top:12px;right:12px;font-size:11px;color:var(--mu)}
+.show .bt{position:absolute;left:0;right:0;bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:0 8px}
+.chip{font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;color:var(--mu2);border:1px solid #3a4558}
+.smbtn{height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--ln3);background:#141a27;font-size:12px;font-weight:600}
+canvas.pv{display:block}
+.floaty{animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.dot{position:absolute;border-radius:50%;animation:rise 7s linear infinite}
+@keyframes rise{0%{transform:translateY(0);opacity:0}25%{opacity:.9}100%{transform:translateY(-120px);opacity:0}}
+.passbtn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--ln);background:var(--p3);text-align:left}
+.tag{font-size:11px;font-weight:700;padding:3px 7px;border-radius:8px;background:var(--pk);color:#1a0610}
+.chest{height:92px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px}
+.play{height:78px;border-radius:16px;background:var(--cy);color:#04161a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 0 26px rgba(63,240,255,.45),inset 0 -5px 0 rgba(0,0,0,.18)}
+.play:active{transform:translateY(2px)}
+/* negozio */
+.box{border-radius:14px;border:1px solid var(--ln2);background:var(--p1);padding:12px 14px;display:flex;gap:12px}
+.pinkbox{border-color:var(--pk);background:#160a12;box-shadow:0 0 18px rgba(255,77,141,.2);flex-direction:column;gap:10px;padding:14px}
+.odds{font-size:12px;line-height:1.5;color:var(--mu2);background:var(--p1);border:1px solid var(--ln2);border-radius:10px;padding:10px 12px}
+/* barra */
+.seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:4px;border-radius:12px;background:var(--p3);border:1px solid var(--ln)}
+.seg button{height:40px;border-radius:9px;font-size:14px;font-weight:700;color:var(--mu)}
+.seg button.on{background:var(--cy);color:#04161a}
+.prev{height:84px;border-radius:12px;border:1px solid var(--ln);background:var(--p2);display:flex;align-items:center;justify-content:center}
+.panel{border-radius:14px;border:1px solid var(--ln);background:var(--p2);padding:14px;display:flex;flex-direction:column;gap:12px}
+.lvtrack{display:flex;align-items:center}
+.lvtrack>div{flex-grow:1;display:flex;align-items:center}
+.lvtrack .ln{flex-grow:1;height:3px}
+.lvtrack .n{width:30px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-family:Michroma,sans-serif;font-size:11px;flex-shrink:0}
+.stat .r{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+.frag{flex-grow:1;height:16px;border-radius:8px;background:var(--tr);overflow:hidden;position:relative}
+.frag i{display:block;height:100%}.frag span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.cats{display:flex;gap:6px}.cats button{flex-grow:1;height:36px;border-radius:18px;font-size:13px;font-weight:700;border:1px solid var(--ln2);background:var(--p1);color:#a9b8cc}
+.cats button.on{border-color:var(--cy);background:#0f2a30;color:var(--cy)}
+.sw{width:60px;height:12px;border-radius:4px;box-shadow:0 0 8px rgba(255,255,255,.12)}
+/* pass */
+.passhead{border-radius:14px;border:1px solid #3a2f12;background:#120f07;padding:14px;display:flex;flex-direction:column;gap:10px}
+.trow{display:grid;grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr);gap:8px;align-items:center}
+.tc{height:66px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px;font-size:12px;font-weight:700;text-align:center}
+.tn{height:40px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-family:Michroma,sans-serif;font-size:13px}
+/* profilo */
+.stbox{border-radius:12px;border:1px solid var(--ln);background:var(--p3);padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+/* navigazione */
+.nav{flex-shrink:0;height:calc(72px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid var(--ln);background:var(--p2)}
+.nav button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:700;color:var(--mu)}
+.nav button.on{background:#121a28;color:var(--cy);box-shadow:inset 0 3px 0 var(--cy)}
+.nav .nd{position:absolute;top:10px;right:calc(50% - 20px);width:9px;height:9px;border-radius:5px}
+/* finestre */
+.veil{position:fixed;inset:0;max-width:480px;margin:0 auto;background:rgba(3,4,8,.84);display:flex;align-items:center;justify-content:center;padding:24px;z-index:20}
+.modal{width:100%;border-radius:16px;border:1px solid var(--ln3);background:#0d111a;padding:20px;display:flex;flex-direction:column;gap:12px;text-align:center}
+.modal .t{font-family:Michroma,sans-serif;font-size:17px}
+.modal .l{font-size:14px}
+.modal .nt{font-size:12px;color:var(--mu);line-height:1.4}
+.btn2{height:44px;border-radius:11px;border:1px solid var(--ln3);color:var(--mu2);font-size:14px;font-weight:600}
+/* baule */
+#chest{flex-direction:column;gap:18px;background:rgba(3,4,8,.93)}
+.cstage{position:relative;width:240px;height:190px}
+.rays{position:absolute;left:20px;top:0;width:200px;height:200px;border-radius:100px;opacity:.5;animation:spin 6s linear infinite}
+.burst{position:absolute;left:70px;top:50px;width:100px;height:100px;border-radius:50px;animation:burst .7s ease-out forwards}
+.cbody{position:absolute;left:60px;top:70px;width:120px;height:100px}
+.cbody.shake{animation:shake .4s ease-in-out infinite;transform-origin:50% 100%}
+.lid{position:absolute;left:-4px;top:0;width:128px;height:38px;border-radius:22px 22px 6px 6px}
+.lid.fly{animation:lid .5s ease-out forwards}
+.cbase{position:absolute;left:0;top:36px;width:120px;height:64px;border-radius:6px 6px 10px 10px}
+.lock{position:absolute;left:50px;top:28px;width:20px;height:22px;border-radius:4px;background:#1a1f2b}
+.rw{height:100px;border-radius:12px;background:var(--p1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px;animation:pop .4s ease-out both}
+@keyframes shake{0%,100%{transform:rotate(0)}20%{transform:rotate(-7deg)}40%{transform:rotate(7deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(5deg)}}
+@keyframes lid{to{transform:translateY(-70px) rotate(-28deg);opacity:0}}
+@keyframes burst{0%{transform:scale(.2);opacity:1}100%{transform:scale(2.6);opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
+/* partita */
+#game{position:fixed;inset:0;background:#05070b;z-index:15;touch-action:none}
+#gcv{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+#gExit{position:absolute;top:calc(10px + env(safe-area-inset-top));left:10px;height:34px;padding:0 12px;border-radius:9px;border:1px solid var(--ln3);background:rgba(14,18,27,.85);color:var(--mu2);font-size:13px;font-weight:600;z-index:2}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top" id="top"></div>
+  <div id="main"></div>
+  <div class="nav" id="nav"></div>
+</div>
+<div id="modal" class="veil hidden"></div>
+<div id="chest" class="veil hidden"></div>
+<div id="game" class="hidden"><canvas id="gcv"></canvas><button id="gExit">Abbandona</button></div>
+<script>
+// ════════════════ PONG ARENA · Lobby (versione di prova, da sola) ════════════════
+// Tutto il gioco è in questo file. I progressi restano salvati nel browser del telefono.
+const BUILD = '28/09 12:30';
+const FW = 1.6, FH = 1;
+const PX = .06, PT = .028, PL = .24;   // barra: distanza dal bordo, spessore, lunghezza
+const BR = .018;                       // raggio pallina
+const SPEED0 = .8, SPEEDUP = 1.06, SMAX = 2.2, WIN = 3;
+const STEP = 1/120;
+const COL = {L:'#3ff0ff', R:'#ff4d8d'};
+const $ = s => document.querySelector(s);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const buzz = p => { try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} };
+function drawSkinAt(c, id, cx, cy, w, now, col){
+  const k = w/TW; c.save(); c.translate(cx, cy); c.scale(k, k);
+  if(id === 'base'){ c.fillStyle = col; c.shadowColor = col; c.shadowBlur = 10; rr(c, -TW/2, -TH/2, TW, TH, 4); c.fill(); }
+  else { c.shadowColor = skinGlow(id, now); c.shadowBlur = 12; c.drawImage(skinTex(id, now).cv, -TW/2, -TH/2 - TPAD); }
+  c.restore();
+}
+
+const SKINS = {
+  base:   {name:'Base',           price:0,    desc:'La barra di serie'},
+  rgb:    {name:'Arcobaleno',     price:2.49, desc:'Il colore cambia in continuazione'},
+  hotdog: {name:'Hot dog',        price:2.99, desc:'Con senape'},
+  baffi:  {name:'Baffoni',        price:3.49, desc:'Naso e baffi'},
+  oro:    {name:'Lingotto d\'oro', price:3.99, desc:'Oro 999,9 che luccica', badge:'Edizione limitata'},
+  aura:   {name:'AURA',           price:4.99, desc:'Lo striscione più ambito', badge:'La più scelta'},
+  cometa: {name:'Cometa',         price:0,    desc:'Leggendaria'}
+};
+const SKIN_ORDER = ['base', 'rgb', 'hotdog', 'baffi', 'oro', 'aura'];
+const TW = 240, TH = 28, TPAD = 22;
+const eur = n => n.toLocaleString('it-IT', {style:'currency', currency:'EUR'});
+const texCache = {};
+function skinGlow(id, now){
+  return {rgb:`hsl(${(now/6) % 360},95%,60%)`, hotdog:'#ffb347', baffi:'#d98a67', oro:'#ffd23a', aura:'#b44dff', cometa:'#ffb347'}[id] || '#ffffff';
+}
+function skinTex(id, now){
+  let t = texCache[id];
+  if(!t){ const cv = document.createElement('canvas'); cv.width = TW; cv.height = TH + 2*TPAD; t = texCache[id] = {cv, ctx:cv.getContext('2d'), at:-1}; }
+  const animated = id === 'rgb' || id === 'oro' || id === 'aura' || id === 'cometa';
+  if(t.at < 0 || (animated && t.at !== now)){
+    const c = t.ctx; c.clearRect(0, 0, TW, TH + 2*TPAD); c.save(); c.translate(0, TPAD); paintSkin(c, id, now); c.restore(); t.at = now;
+  }
+  return t;
+}
+function paintSkin(c, id, now){
+  c.lineJoin = 'round'; c.lineCap = 'round';
+  if(id === 'rgb'){
+    const g = c.createLinearGradient(0, 0, TW, 0);
+    for(let i = 0; i <= 6; i++) g.addColorStop(i/6, `hsl(${(now/6 + i*60) % 360},95%,60%)`);
+    rr(c, 0, 0, TW, TH, TH/2); c.fillStyle = g; c.fill();
+    c.fillStyle = 'rgba(255,255,255,.4)'; rr(c, 10, 3, TW - 20, 6, 3); c.fill();
+  } else if(id === 'hotdog'){
+    let g = c.createLinearGradient(0, 0, 0, TH); g.addColorStop(0, '#f6c982'); g.addColorStop(1, '#b36a28');
+    rr(c, 10, 0, TW - 20, TH, TH/2); c.fillStyle = g; c.fill(); c.strokeStyle = 'rgba(90,45,10,.55)'; c.lineWidth = 1.5; c.stroke();
+    g = c.createLinearGradient(0, TH*.22, 0, TH*.78); g.addColorStop(0, '#e46a4c'); g.addColorStop(1, '#8a2716');
+    rr(c, 0, TH*.24, TW, TH*.52, TH*.26); c.fillStyle = g; c.fill();
+    c.fillStyle = 'rgba(255,255,255,.28)'; rr(c, 8, TH*.3, TW - 16, 3, 1.5); c.fill();
+    c.strokeStyle = '#ffd23a'; c.lineWidth = 3; c.beginPath();
+    for(let x = 16, i = 0; x <= TW - 16; x += 10, i++){ const y = TH/2 + (i % 2 ? -4 : 4); i ? c.lineTo(x, y) : c.moveTo(x, y); }
+    c.stroke();
+  } else if(id === 'baffi'){
+    c.fillStyle = '#3b2314';
+    for(const d of [-1, 1]){
+      const cx = TW/2; c.beginPath(); c.moveTo(cx, TH*.5);
+      c.bezierCurveTo(cx + d*40, TH*.05, cx + d*88, TH*1.05, cx + d*110, TH*.4);
+      c.bezierCurveTo(cx + d*118, TH*.05, cx + d*108, -TH*.35, cx + d*96, TH*.05);
+      c.bezierCurveTo(cx + d*84, TH*.6, cx + d*42, TH*1.05, cx, TH*1.0);
+      c.closePath(); c.fill();
+    }
+    c.strokeStyle = 'rgba(255,255,255,.18)'; c.lineWidth = 1.5;
+    for(const d of [-1, 1]){ c.beginPath(); c.moveTo(TW/2 + d*14, TH*.55); c.quadraticCurveTo(TW/2 + d*55, TH*.4, TW/2 + d*85, TH*.7); c.stroke(); }
+    const ng = c.createRadialGradient(TW/2 - 7, -6, 2, TW/2, 2, 24); ng.addColorStop(0, '#ffd4b6'); ng.addColorStop(1, '#d5805f');
+    c.fillStyle = ng; c.beginPath(); c.ellipse(TW/2, 1, 19, 18, 0, 0, Math.PI*2); c.fill();
+    c.strokeStyle = 'rgba(120,50,30,.5)'; c.lineWidth = 1.2; c.stroke();
+    c.fillStyle = '#6b2e22'; c.beginPath(); c.ellipse(TW/2 - 7, 13, 4, 2.4, 0, 0, Math.PI*2); c.ellipse(TW/2 + 7, 13, 4, 2.4, 0, 0, Math.PI*2); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.ellipse(TW/2 - 6, -8, 5, 3, -.4, 0, Math.PI*2); c.fill();
+  } else if(id === 'oro'){
+    const g = c.createLinearGradient(0, 0, 0, TH); g.addColorStop(0, '#fff6c2'); g.addColorStop(.45, '#ffd23a'); g.addColorStop(1, '#a8740a');
+    c.beginPath(); c.moveTo(12, 0); c.lineTo(TW - 12, 0); c.lineTo(TW, TH); c.lineTo(0, TH); c.closePath();
+    c.fillStyle = g; c.fill(); c.strokeStyle = '#8a5a00'; c.lineWidth = 1.5; c.stroke();
+    c.fillStyle = 'rgba(110,70,0,.75)'; c.font = '700 12px ui-monospace,monospace'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('FINE GOLD · 999,9', TW/2, TH/2 + 1);
+    c.save(); c.globalCompositeOperation = 'source-atop';
+    const sx = ((now/1400) % 1.8 - .4)*TW, sg = c.createLinearGradient(sx - 28, 0, sx + 28, 0);
+    sg.addColorStop(0, 'rgba(255,255,255,0)'); sg.addColorStop(.5, 'rgba(255,255,255,.85)'); sg.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = sg; c.fillRect(0, 0, TW, TH); c.restore();
+  } else if(id === 'cometa'){
+    const g = c.createLinearGradient(0, 0, TW, 0); g.addColorStop(0, '#fff8e0'); g.addColorStop(.35, '#ffd23a'); g.addColorStop(.75, '#ff8a3d'); g.addColorStop(1, '#ff4d8d');
+    rr(c, 0, 0, TW, TH, TH/2); c.fillStyle = g; c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 1.5; c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.45)'; rr(c, 12, 3, TW - 24, 5, 2.5); c.fill();
+    for(let i = 0; i < 5; i++){ const x = ((now/9 + i*53) % (TW + 40)) - 20, y = 6 + (i*7) % (TH - 12);
+      c.fillStyle = 'rgba(255,255,255,.85)'; c.beginPath(); c.arc(x, y, 2, 0, Math.PI*2); c.fill();
+      c.fillStyle = 'rgba(255,255,255,.3)'; c.fillRect(x - 16, y - .75, 16, 1.5); }
+  } else if(id === 'aura'){
+    const g = c.createLinearGradient(0, 0, TW, 0); g.addColorStop(0, '#4b17b8'); g.addColorStop(.5, '#b44dff'); g.addColorStop(1, '#4b17b8');
+    c.beginPath(); c.moveTo(0, 0); c.lineTo(TW, 0); c.lineTo(TW - 14, TH/2); c.lineTo(TW, TH); c.lineTo(0, TH); c.lineTo(14, TH/2); c.closePath();
+    c.fillStyle = g; c.fill(); c.strokeStyle = '#ffd23a'; c.lineWidth = 2; c.stroke();
+    c.font = '22px "Michroma", sans-serif'; c.textBaseline = 'middle'; c.fillStyle = '#ffffff';
+    c.shadowColor = '#e7b8ff'; c.shadowBlur = 6 + 4*Math.sin(now/250);
+    spaced(c, 'AURA', TW/2, TH/2 + 1, 9); c.shadowBlur = 0;
+    c.fillStyle = '#ffd23a'; c.font = '14px system-ui,sans-serif'; c.textAlign = 'center';
+    const tw = 1 + .25*Math.sin(now/180);
+    c.save(); c.translate(38, TH/2); c.scale(tw, tw); c.fillText('✦', 0, 1); c.restore();
+    c.save(); c.translate(TW - 38, TH/2); c.scale(2 - tw, 2 - tw); c.fillText('✦', 0, 1); c.restore();
+  }
+}
+// disegna la skin in un riquadro (anteprime del negozio)
+function drawSkinPreview(cv, id, now, col){
+  const dpr = devicePixelRatio || 1, r = cv.getBoundingClientRect();
+  if(cv.width !== Math.round(r.width*dpr)){ cv.width = Math.round(r.width*dpr); cv.height = Math.round(r.height*dpr); }
+  const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, r.width, r.height);
+  const k = Math.min((r.width - 16)/TW, r.height/(TH + 2*TPAD));
+  drawSkinAt(c, id, r.width/2, r.height/2, TW*k, now, col || '#3ff0ff');
+}
+
+
+
+// ── Visuale 3D "Tribuna" del telefono ──
+// Il telefono vede il campo da dietro la propria barra. Coordinate locali:
+// u = posizione laterale (0..FH), z = profondità dalla propria barra (0..FW), h = altezza.
+const CAM = {x:FH/2, y:1.7, z:-.45, pitch:1.08}, CP = Math.cos(CAM.pitch), SP = Math.sin(CAM.pitch);
+const PADH = .05, CTRL_FRAC = .27;
+function shade(hex, f){ const n = parseInt(hex.slice(1), 16); return `rgb(${(n >> 16)*f|0},${((n >> 8) & 255)*f|0},${(n & 255)*f|0})`; }
+// Visuale 3D "Tribuna" dal lato di un giocatore. La usano i telefoni e i riquadri sul PC.
+class Field3D {
+  constructor(side){ this.side = side; this.rect = {x:0, y:0, w:1, h:1}; this.k = 1; this.ox = 0; this.oy = 0; }
+  u(y){ return this.side === 'L' ? y : FH - y; }   // y del mondo → posizione laterale (e viceversa)
+  z(x){ return this.side === 'L' ? x : FW - x; }   // x del mondo → profondità dalla propria barra
+  raw(u, h, z){ const dx = u - CAM.x, dy = h - CAM.y, dz = z - CAM.z, zc = dz*CP - dy*SP, yc = dy*CP + dz*SP; return [dx/zc, -yc/zc, zc]; }
+  P(u, h, z){ const [a, b, zc] = this.raw(u, h, z); return [this.ox + a*this.k, this.oy + b*this.k, zc]; }
+  fit(x, y, w, h, top){
+    const pts = [this.raw(0,0,0), this.raw(FH,0,0), this.raw(0,0,FW), this.raw(FH,0,FW)];
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), m = 10, sm = Math.max(10, w*.04);
+    const minY = Math.min(...ys), maxY = Math.max(...ys), minX = Math.min(...xs), maxX = Math.max(...xs);
+    this.k = Math.min((h - top - m)/(maxY - minY), (w - 2*sm)/(pts[1][0] - pts[0][0]), (w - 2*m)/(pts[3][0] - pts[2][0]));
+    this.ox = x + w/2 - (minX + maxX)/2*this.k; this.oy = y + h - m - maxY*this.k;
+    this.rect = {x, y, w, h};
+  }
+  poly(c, pts, fill, stroke){
+    c.beginPath(); pts.forEach((p, i) => { const q = this.P(...p); i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1]); });
+    c.closePath(); if(fill){ c.fillStyle = fill; c.fill(); } if(stroke){ c.strokeStyle = stroke; c.stroke(); }
+  }
+  line(c, a, b, col, w){ const p = this.P(...a), q = this.P(...b); c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); }
+  texQuad(c, tex, A, B, Cc, dark, coreOnly){
+    const p = this.P(...A), q = this.P(...B), r = this.P(...Cc);
+    c.save(); c.transform((q[0] - p[0])/TW, (q[1] - p[1])/TW, (r[0] - p[0])/TH, (r[1] - p[1])/TH, p[0], p[1]);
+    if(coreOnly) c.drawImage(tex.cv, 0, TPAD, TW, TH, 0, 0, TW, TH); else c.drawImage(tex.cv, 0, -TPAD);
+    if(dark){ c.shadowBlur = 0; c.fillStyle = `rgba(0,0,0,${dark})`; c.fillRect(0, 0, TW, TH); }
+    c.restore();
+  }
+  box(c, u, z, col, bright, skin, now, flip, len){
+    const x0 = u - (len || PL)/2, x1 = u + (len || PL)/2, z0 = z - PT/2, z1 = z + PT/2, h = PADH;
+    if(skin && skin !== 'base'){
+      const tex = skinTex(skin, now);
+      c.shadowBlur = 0;
+      if(CAM.x < x0) this.poly(c, [[x0,0,z0],[x0,h,z0],[x0,h,z1],[x0,0,z1]], 'rgba(15,15,22,.95)');
+      if(CAM.x > x1) this.poly(c, [[x1,0,z0],[x1,h,z0],[x1,h,z1],[x1,0,z1]], 'rgba(15,15,22,.95)');
+      this.texQuad(c, tex, [x0,h,z0], [x1,h,z0], [x0,0,z0], .45, true);
+      c.shadowColor = skinGlow(skin, now); c.shadowBlur = bright ? 16 : 8;
+      if(flip) this.texQuad(c, tex, [x1,h,z0], [x0,h,z0], [x1,h,z1]);
+      else this.texQuad(c, tex, [x0,h,z1], [x1,h,z1], [x0,h,z0]);
+      c.shadowBlur = 0; return;
+    }
+    c.shadowColor = col; c.shadowBlur = bright ? 18 : 8;
+    if(CAM.x < x0) this.poly(c, [[x0,0,z0],[x0,h,z0],[x0,h,z1],[x0,0,z1]], shade(col, .55));
+    if(CAM.x > x1) this.poly(c, [[x1,0,z0],[x1,h,z0],[x1,h,z1],[x1,0,z1]], shade(col, .55));
+    this.poly(c, [[x0,h,z0],[x1,h,z0],[x1,h,z1],[x0,h,z1]], col);
+    this.poly(c, [[x0,0,z0],[x1,0,z0],[x1,h,z0],[x0,h,z0]], shade(col, .78));
+    c.shadowBlur = 0;
+  }
+  // st: {ball:{x,y}|null, trail:[[x,y]], myY, oppY, showOpp, ph, cd, msg:[riga1, riga2]|null, hint}
+  draw(c, st, now){
+    const {x, y, w, h} = this.rect, me = this.side, opp = me === 'L' ? 'R' : 'L';
+    c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
+    const bg = c.createLinearGradient(0, y, 0, y + h); bg.addColorStop(0, '#07080c'); bg.addColorStop(1, '#0d1018');
+    c.fillStyle = bg; c.fillRect(x, y, w, h);
+    const hz = this.P(FH/2, 0, FW), glow = c.createRadialGradient(hz[0], hz[1], 0, hz[0], hz[1], w*.8);
+    glow.addColorStop(0, COL[opp] + '29'); glow.addColorStop(1, COL[opp] + '00');
+    c.fillStyle = glow; c.fillRect(x, y, w, h);
+    this.poly(c, [[0,0,0],[FH,0,0],[FH,0,FW],[0,0,FW]], '#0b0f17');
+    for(let z = .2; z < FW; z += .2) this.line(c, [0,0,z], [FH,0,z], 'rgba(90,110,150,.16)', 1);
+    for(const u of [.25, .5, .75]) this.line(c, [u,0,0], [u,0,FW], 'rgba(90,110,150,.12)', 1);
+    for(let u = 0; u < FH; u += .08) this.line(c, [u + .01,0,FW/2], [u + .05,0,FW/2], 'rgba(200,210,235,.45)', 2);
+    const wh = .035;
+    this.poly(c, [[0,0,0],[0,wh,0],[0,wh,FW],[0,0,FW]], 'rgba(120,130,160,.10)');
+    this.poly(c, [[FH,0,0],[FH,wh,0],[FH,wh,FW],[FH,0,FW]], 'rgba(120,130,160,.10)');
+    this.line(c, [0,wh,0], [0,wh,FW], 'rgba(170,180,210,.55)', 2); this.line(c, [FH,wh,0], [FH,wh,FW], 'rgba(170,180,210,.55)', 2);
+    this.line(c, [0,0,FW], [FH,0,FW], COL[opp] + '80', 2); this.line(c, [0,0,0], [FH,0,0], COL[me] + '80', 2);
+    const drawBall = () => {
+      if(!st.ball) return;
+      const u = this.u(st.ball.y), z = this.z(st.ball.x);
+      const sh = this.P(u, 0, z), b = this.P(u, BR, z), r = Math.max(2, BR*this.k/b[2]);
+      c.fillStyle = 'rgba(0,0,0,.55)'; c.beginPath(); c.ellipse(sh[0], sh[1], r*1.1, r*.45, 0, 0, Math.PI*2); c.fill();
+      (st.trail || []).forEach(([tx, ty], i, a) => { const q = this.P(this.u(ty), BR, this.z(tx)); c.fillStyle = st.trailCol ? st.trailCol(i, a.length) : `rgba(255,255,255,${i/a.length*.18})`; c.beginPath(); c.arc(q[0], q[1], r*.7, 0, Math.PI*2); c.fill(); });
+      const g = c.createRadialGradient(b[0] - r*.35, b[1] - r*.35, r*.1, b[0], b[1], r);
+      g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#b9c2d6');
+      c.fillStyle = g; c.shadowColor = '#fff'; c.shadowBlur = 10; c.beginPath(); c.arc(b[0], b[1], r, 0, Math.PI*2); c.fill(); c.shadowBlur = 0;
+    };
+    if(st.showOpp) this.box(c, this.u(st.oppY), FW - PX, COL[opp], false, st.oppSkin, now, true, st.oppLen);
+    const bz = st.ball ? this.z(st.ball.x) : 1;
+    if(bz > PX){ drawBall(); this.box(c, this.u(st.myY), PX, COL[me], true, st.mySkin, now, false, st.myLen); }
+    else { this.box(c, this.u(st.myY), PX, COL[me], true, st.mySkin, now, false, st.myLen); drawBall(); }
+    const mid = this.P(FH/2, 0, FW/2);
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    if(st.ph === 'cd' && st.cd > 0){
+      c.fillStyle = '#fff'; c.font = `700 ${Math.round(w*.16)}px "Chakra Petch", monospace`; c.fillText(Math.ceil(st.cd/1000), mid[0], mid[1] - w*.08);
+      if(st.hint){ c.font = `500 ${Math.round(w*.036)}px system-ui,sans-serif`; c.fillStyle = '#c3c9d6'; c.fillText(st.hint, mid[0], mid[1] + w*.06); }
+    }
+    if(st.msg){
+      c.font = `600 ${Math.round(w*.05)}px system-ui,sans-serif`; c.fillStyle = '#e8ecf4'; c.fillText(st.msg[0], mid[0], mid[1] - w*.04);
+      c.font = `500 ${Math.round(w*.038)}px system-ui,sans-serif`; c.fillStyle = '#8b93a7'; c.fillText(st.msg[1], mid[0], mid[1] + w*.03);
+    }
+    c.restore();
+  }
+}
+
+function rr(c, x, y, w, h, r){ c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+
+// ── Logo HUD ──
+function spaced(c, text, cx, y, ls){
+  const ws = [...text].map(ch => c.measureText(ch).width), tot = ws.reduce((a, b) => a + b, 0) + ls*(text.length - 1);
+  let x = cx - tot/2; c.textAlign = 'left'; [...text].forEach((ch, i) => { c.fillText(ch, x, y); x += ws[i] + ls; }); c.textAlign = 'center';
+}
+function logoHud(c, cx, oy, W, H, now, label){
+  // logo PONG ARENA: cornice da visore e colori leggermente sdoppiati (niente disturbi)
+  c.save(); c.translate(0, oy); c.textBaseline = 'middle'; c.textAlign = 'center';
+  c.font = '100px "Michroma", sans-serif';
+  const sz = 100*W*.66/(c.measureText('PONG').width + 12*3), ls = sz*.12, y = H*.42, off = Math.max(1, W*.004);
+  c.font = `${sz}px "Michroma", sans-serif`;
+  c.save(); c.globalCompositeOperation = 'lighter';
+  c.fillStyle = 'rgba(255,77,141,.9)'; spaced(c, 'PONG', cx - off, y, ls);
+  c.fillStyle = 'rgba(63,240,255,.9)'; spaced(c, 'PONG', cx + off, y, ls);
+  c.restore();
+  c.fillStyle = '#f2f6ff'; spaced(c, 'PONG', cx, y, ls);
+  const fx = cx - W*.42, fy = H*.08, fw = W*.84, fh = H*.66, L = Math.max(10, W*.05);
+  c.strokeStyle = '#3ff0ff'; c.lineWidth = 2; c.lineCap = 'square';
+  for(const [x, y2, dx, dy] of [[fx, fy, 1, 1], [fx + fw, fy, -1, 1], [fx, fy + fh, 1, -1], [fx + fw, fy + fh, -1, -1]]){
+    c.beginPath(); c.moveTo(x, y2 + dy*L); c.lineTo(x, y2); c.lineTo(x + dx*L, y2); c.stroke(); }
+  const s2 = W*.045; c.font = `${s2}px "Michroma", sans-serif`; c.fillStyle = '#ff4d8d';
+  spaced(c, 'ARENA', cx, fy + fh, s2*1.2);
+  c.font = `700 ${Math.max(10, W*.03)}px "Chakra Petch", monospace`; c.fillStyle = 'rgba(191,248,255,.75)'; c.textAlign = 'left';
+  c.fillText(label, fx, H*.94);
+  c.textAlign = 'right'; c.fillStyle = (now % 1000) < 600 ? '#ff4d8d' : 'rgba(255,77,141,.3)';
+  c.fillText('● LIVE', fx + fw, H*.94);
+  c.restore();
+}
+
+
+// ════════════════ Dati del gioco ════════════════
+const NEED = [0, 10, 20, 40, 80];          // frammenti per passare dal livello i al successivo
+const COST = [0, 100, 300, 800, 2000];     // monete
+const LEN  = [0, 0, 2, 4, 6, 8];           // % lunghezza della barra per livello
+const SPD  = [0, 0, 3, 6, 9, 12];          // % velocità della barra per livello
+const BASE_V = 1.7;                        // velocità massima della barra (campo al secondo)
+const CATS = [{id:'skin', label:'Skin'}, {id:'scia', label:'Scia'}, {id:'colpo', label:'Colpo'}, {id:'gol', label:'Gol'}];
+const COS = [
+  {id:'s_base',   cat:'skin',  tex:'base',   name:'Base'},
+  {id:'s_rgb',    cat:'skin',  tex:'rgb',    name:'RGB', gems:150},
+  {id:'s_hotdog', cat:'skin',  tex:'hotdog', name:'Hot dog', gems:200},
+  {id:'s_baffi',  cat:'skin',  tex:'baffi',  name:'Baffi', gems:250},
+  {id:'s_oro',    cat:'skin',  tex:'oro',    name:'Oro', gems:300, badge:'Edizione limitata'},
+  {id:'s_aura',   cat:'skin',  tex:'aura',   name:'AURA', gems:400, badge:'La più scelta'},
+  {id:'s_cometa', cat:'skin',  tex:'cometa', name:'Cometa', pack:true, badge:'Leggendaria'},
+  {id:'t_none',   cat:'scia',  name:'Nessuna', sw:'background:#1d2433'},
+  {id:'t_neon',   cat:'scia',  name:'Neon', sw:'background:linear-gradient(90deg,transparent,#3ff0ff)'},
+  {id:'t_fire',   cat:'scia',  name:'Fiamme', gems:120, sw:'background:linear-gradient(90deg,transparent,#ff7a3d,#ffd84d)'},
+  {id:'t_rain',   cat:'scia',  name:'Arcobaleno', pass:true, sw:'background:linear-gradient(90deg,transparent,#ff4d4d,#ffd84d,#4dff88,#4dd2ff)'},
+  {id:'h_spark',  cat:'colpo', name:'Scintille', sw:'background:repeating-linear-gradient(90deg,#fff 0 3px,transparent 3px 8px)'},
+  {id:'h_wave',   cat:'colpo', name:'Onda', gems:80, sw:'background:repeating-linear-gradient(90deg,#3ff0ff 0 2px,transparent 2px 6px)'},
+  {id:'h_pixel',  cat:'colpo', name:'Pixel', pass:true, sw:'background:repeating-linear-gradient(90deg,#ff4d8d 0 6px,#3ff0ff 6px 12px)'},
+  {id:'g_base',   cat:'gol',   name:'GOL!', sw:'background:#3ff0ff'},
+  {id:'g_fire',   cat:'gol',   name:'Fuochi', gems:150, sw:'background:repeating-linear-gradient(90deg,#ffd84d 0 4px,#ff4d8d 4px 8px,#3ff0ff 8px 12px)'},
+  {id:'g_baffi',  cat:'gol',   name:'Baffi danzanti', pass:true, sw:'background:#3a2414'}
+];
+const DAILY = [
+  {id:'d_free', label:'50 monete',    free:true, r:[{t:'coins', n:50}]},
+  {id:'d_f10',  label:'10 frammenti', coins:250, r:[{t:'frag', n:10}]},
+  {id:'d_f25',  label:'25 frammenti', gems:60,   r:[{t:'frag', n:25}]},
+  {id:'d_fire', label:'Scia Fiamme',  gems:84, was:120, r:[{t:'cos', id:'t_fire'}]}
+];
+const GEMS = [{n:80, e:.99}, {n:500, e:4.99, badge:'Più popolare'}, {n:1200, e:9.99, badge:'+20% extra'}, {n:6500, e:49.99, badge:'Miglior valore'}];
+const COINPACKS = [{n:1000, g:60}, {n:5000, g:250}];
+const FREE = [{t:'coins',n:100},{t:'frag',n:5},{t:'gems',n:10},{t:'coins',n:200},{t:'frag',n:10},{t:'gems',n:20},{t:'coins',n:300},{t:'frag',n:15},{t:'gems',n:30},{t:'frag',n:20}];
+const PREM = [{t:'gems',n:50},{t:'cos',id:'t_rain'},{t:'frag',n:20},{t:'cos',id:'h_pixel'},{t:'coins',n:1000},{t:'frag',n:30},{t:'gems',n:100},{t:'cos',id:'g_baffi'},{t:'frag',n:40},{t:'cos',id:'s_cometa'}];
+const CHEST_H = {Argento:3, Oro:8};
+const CHEST_NAME = k => k === 'Oro' ? 'Baule d\'oro' : 'Baule d\'argento';
+
+// ════════════════ Utilità ════════════════
+const cos = id => COS.find(o => o.id === id) || COS[0];
+const num = n => n.toLocaleString('it-IT');
+const eu = n => n.toFixed(2).replace('.', ',');
+const two = n => (n < 10 ? '0' : '') + n;
+const clock = ms => { ms = Math.max(0, ms); const s = Math.floor(ms/1000); return two(Math.floor(s/3600)) + ':' + two(Math.floor(s/60) % 60) + ':' + two(s % 60); };
+const dur = ms => { ms = Math.max(0, ms); const s = Math.floor(ms/1000), h = Math.floor(s/3600), m = Math.floor(s/60) % 60; return h ? h + 'h ' + two(m) + 'm' : m + 'm ' + two(s % 60) + 's'; };
+const days = ms => { ms = Math.max(0, ms); const h = Math.floor(ms/3600e3); return Math.floor(h/24) + 'g ' + (h % 24) + 'h'; };
+const rnd = (a, b) => a + Math.floor(Math.random()*(b - a + 1));
+const catWord = c => ({scia:'Scia ', colpo:'Colpo ', gol:'Gol '})[c] || 'Skin ';
+function rlabel(r){
+  if(r.t === 'coins') return num(r.n) + ' monete';
+  if(r.t === 'gems') return r.n + ' gemme';
+  if(r.t === 'frag') return r.n + ' frammenti';
+  const c = cos(r.id); return catWord(c.cat) + c.name;
+}
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'})[ch]);
+
+// icone (disegni semplici, niente emoji)
+const I = {
+  trophy:(s=15) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="#ffc94d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>`,
+  coin:(s=15) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="#ffc94d" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg>`,
+  gem:(s=15) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="#5cf2ff" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20M12 21 8 9l4-6 4 6z"/></svg>`,
+  frag:(s=18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="#3ff0ff" stroke-width="2" stroke-linejoin="round"><path d="M4 14 10 3l10 6-6 12z"/><path d="M10 3l4 18"/></svg>`,
+  chest:(col, s=30) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="9" width="18" height="11" rx="2"/><path d="M3 13h18M5 9a7 5 0 0 1 14 0M12 12v3"/></svg>`,
+  crown:(s=22) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 8l4 4 5-7 5 7 4-4v11H3z"/></svg>`,
+  lock:(s=18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="#8d9bb0" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`,
+  shop:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
+  bar:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="10" width="18" height="5" rx="1.5"/><path d="M12 3v4M9 5l3-2 3 2"/></svg>',
+  arena:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 12h16M9 6h6M9 18h6"/></svg>',
+  user:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>'
+};
+
+// ════════════════ Stato (salvato nel browser) ════════════════
+const KEY = 'pongarena-lobby-v1';
+function fresh(){
+  const t = Date.now();
+  return {
+    tab:'lobby', t0:t, day:new Date().toDateString(),
+    coins:1250, gems:85, trophies:412, lvl:7, xp:340, matches:23, wins:12,
+    spent:0, gemsBought:0, purchases:[],
+    bar:{lvl:2, frag:14}, barTab:'up', cosCat:'skin',
+    cosOwned:{s_base:1, t_none:1, t_neon:1, h_spark:1, g_base:1},
+    eq:{skin:'s_base', scia:'t_neon', colpo:'h_spark', gol:'g_base'},
+    chests:[{k:'Argento', st:'ready'}, {k:'Argento', st:'unlocking', end:t + 2*3600e3 + 13*60e3}, {k:'Oro', st:'locked'}, {k:'', st:'empty'}],
+    passXp:340, premium:false, claimed:{}, bought:{}, showOdds:false, needGems:false,
+    offerEnd:t + 5*3600e3 + 59*60e3 + 12e3
+  };
+}
+let S;
+try{ const raw = localStorage.getItem(KEY); S = raw ? Object.assign(fresh(), JSON.parse(raw)) : fresh(); }catch(e){ S = fresh(); }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function commit(){ save(); render(); }
+function apply(r){
+  if(r.t === 'coins') S.coins += r.n;
+  else if(r.t === 'gems') S.gems += r.n;
+  else if(r.t === 'frag') S.bar.frag += r.n;
+  else if(r.t === 'cos') S.cosOwned[r.id] = 1;
+}
+const chestState = c => c.st === 'unlocking' && c.end <= Date.now() ? 'ready' : c.st;
+
+// ════════════════ Finestre ════════════════
+let MOD = null;
+function openModal(m){ MOD = m; renderModal(); }
+function closeModal(){ MOD = null; renderModal(); }
+function renderModal(){
+  const el = $('#modal');
+  if(!MOD){ el.classList.add('hidden'); el.innerHTML = ''; return; }
+  const col = MOD.color || '#e8f4ff';
+  el.innerHTML = `<div class="modal" style="border-color:${MOD.color || '#2d3749'};box-shadow:0 0 30px ${MOD.color ? MOD.color + '33' : 'transparent'}">
+    <div class="t" style="color:${col}">${esc(MOD.title)}</div>
+    ${(MOD.lines || []).map(l => `<div class="l">${esc(l)}</div>`).join('')}
+    ${MOD.note ? `<div class="nt">${esc(MOD.note)}</div>` : ''}
+    ${MOD.primary ? `<button class="bigbtn" id="mP" style="background:${MOD.primary.bg || '#3ff0ff'};color:#07080c">${esc(MOD.primary.label)}</button>` : ''}
+    ${MOD.secondary ? `<button class="btn2" id="mS">${esc(MOD.secondary.label)}</button>` : ''}
+  </div>`;
+  el.classList.remove('hidden');
+  const m = MOD;
+  if(m.primary) $('#mP').onclick = () => m.primary.fn();
+  if(m.secondary) $('#mS').onclick = () => m.secondary.fn();
+}
+function rewardModal(title, list){ openModal({title, color:'#ffc94d', lines:list.map(rlabel), primary:{label:'Fantastico!', fn:closeModal}}); }
+function pay(label, euro, give){
+  openModal({title:'Conferma acquisto', color:'#ff8fb6', lines:[label, 'Prezzo: € ' + eu(euro)],
+    note:'Simulazione: nessun addebito reale. Il totale si vede nel Profilo.',
+    primary:{label:'Paga € ' + eu(euro), bg:'#ff4d8d', fn:() => {
+      MOD = null; give();
+      S.spent = Math.round((S.spent + euro)*100)/100;
+      S.purchases.unshift({label, price:'€ ' + eu(euro)});
+      commit(); buzz(30);
+      if(!MOD) openModal({title:'Grazie!', color:'#ff8fb6', lines:[label + ' è tuo.'], primary:{label:'Continua', fn:closeModal}});
+    }},
+    secondary:{label:'Annulla', fn:closeModal}});
+}
+function spend(kind, label, n, give){
+  const have = kind === 'gems' ? S.gems : S.coins, word = kind === 'gems' ? 'gemme' : 'monete';
+  if(have < n) return openModal({title:(kind === 'gems' ? 'Gemme' : 'Monete') + ' insufficienti', color:'#ff8fb6',
+    lines:['Ti mancano ' + num(n - have) + ' ' + word + ' per: ' + label + '.'],
+    primary:{label:kind === 'gems' ? 'Compra gemme' : 'Compra monete', bg:'#ff4d8d', fn:() => { closeModal(); S.tab = 'shop'; S.needGems = kind === 'gems'; commit(); $('#main').scrollTop = 0; }},
+    secondary:{label:'Annulla', fn:closeModal}});
+  openModal({title:'Confermi?', lines:[label], primary:{label:'Spendi ' + num(n) + ' ' + word, fn:() => {
+    MOD = null; renderModal();
+    if(kind === 'gems') S.gems -= n; else S.coins -= n;
+    give(); commit();
+  }}, secondary:{label:'Annulla', fn:closeModal}});
+}
+
+// ════════════════ Bauli (con animazione) ════════════════
+function chestRoll(k){
+  const out = [], oro = k === 'Oro';
+  out.push({t:'coins', n:oro ? rnd(500, 600) : rnd(120, 200)});
+  out.push({t:'frag', n:oro ? rnd(20, 30) : rnd(8, 14)});
+  if(oro && Math.random() < .05 && !S.cosOwned.s_cometa) out.push({t:'cos', id:'s_cometa'});
+  else if(oro) out.push({t:'gems', n:rnd(3, 8)});
+  return out;
+}
+let chestTimers = [];
+function openChestAnim(k){
+  const list = chestRoll(k); list.forEach(apply); save(); render();
+  const gold = k === 'Oro', col = gold ? '#ffc94d' : '#c9d3e0', glow = gold ? 'rgba(255,201,77,.35)' : 'rgba(201,211,224,.3)';
+  const el = $('#chest');
+  el.innerHTML = `<div class="mi" style="font-size:18px;color:${col}">${CHEST_NAME(k)}</div>
+    <div class="cstage"><div id="cfx"></div>
+      <div class="cbody shake" id="cbody">
+        <div class="lid" id="clid" style="${gold ? 'background:#ffc94d;border:2px solid #fff1b0' : 'background:#c9d3e0;border:2px solid #eef3fa'}"></div>
+        <div class="cbase" style="${gold ? 'background:#b07a14;border:2px solid #ffc94d;box-shadow:0 0 24px rgba(255,201,77,.45)' : 'background:#6f7c90;border:2px solid #c9d3e0;box-shadow:0 0 24px rgba(201,211,224,.3)'}"></div>
+        <div class="lock" style="border:2px solid ${col}"></div>
+      </div></div>
+    <div class="g3" id="crw" style="width:100%;min-height:104px"></div>
+    <button class="bigbtn hidden" id="cOk" style="width:100%;background:${col};color:#07080c">Fantastico!</button>
+    <button class="btn2" id="cSkip" style="width:100%">Tocca per saltare</button>`;
+  el.classList.remove('hidden'); buzz([10, 40, 10, 40, 10]);
+  let shown = 0, opened = false;
+  const reveal = () => {
+    if(shown >= list.length) return;
+    const r = list[shown++], c = r.t === 'coins' ? '#ffc94d' : r.t === 'gems' ? '#5cf2ff' : r.t === 'frag' ? '#3ff0ff' : '#ff8fb6';
+    const ico = r.t === 'coins' ? I.coin(26) : r.t === 'gems' ? I.gem(26) : r.t === 'frag' ? I.frag(26) : `<canvas class="pv" data-skin="${cos(r.id).cat === 'skin' ? r.id : ''}" style="width:80px;height:26px;${cos(r.id).cat === 'skin' ? '' : 'display:none'}"></canvas>${cos(r.id).cat === 'skin' ? '' : `<div class="sw" style="${cos(r.id).sw}"></div>`}`;
+    const big = r.t === 'cos' ? 'NUOVA!' : '+' + num(r.n), small = r.t === 'coins' ? 'monete' : r.t === 'gems' ? 'gemme' : r.t === 'frag' ? 'frammenti di barra' : rlabel(r);
+    $('#crw').insertAdjacentHTML('beforeend', `<div class="rw" style="border:1px solid ${c};box-shadow:0 0 14px ${c}40">${ico}<span style="font-size:18px;font-weight:700;color:${c}">${big}</span><span style="font-size:11px;color:#c9d3e0">${esc(small)}</span></div>`);
+    buzz(15);
+    if(shown >= list.length){ $('#cOk').classList.remove('hidden'); $('#cSkip').classList.add('hidden'); }
+  };
+  const open = () => {
+    if(opened) return; opened = true;
+    $('#cbody').classList.remove('shake'); $('#clid').classList.add('fly');
+    $('#cfx').innerHTML = `<div class="rays" style="background:repeating-conic-gradient(${glow} 0 10deg,transparent 10deg 30deg)"></div><div class="burst" style="background:${col}"></div>`;
+    buzz(60);
+  };
+  const stop = () => { chestTimers.forEach(t => { clearTimeout(t); clearInterval(t); }); chestTimers = []; };
+  stop();
+  chestTimers.push(setTimeout(() => { open(); chestTimers.push(setInterval(() => { reveal(); if(shown >= list.length) stop(); }, 480)); }, 1200));
+  $('#cSkip').onclick = () => { stop(); open(); while(shown < list.length) reveal(); };
+  $('#cOk').onclick = () => { stop(); el.classList.add('hidden'); el.innerHTML = ''; };
+}
+function clickChest(i){
+  const c = S.chests[i], st = chestState(c), now = Date.now();
+  if(st === 'empty') return openModal({title:'Slot libero', lines:['Vinci una partita per guadagnare un baule.'], primary:{label:'Ok', fn:closeModal}});
+  if(st === 'ready'){ S.chests[i] = {k:'', st:'empty'}; return openChestAnim(c.k); }
+  const busy = S.chests.some(o => chestState(o) === 'unlocking');
+  const rem = st === 'unlocking' ? c.end - now : CHEST_H[c.k]*3600e3, cost = Math.max(1, Math.ceil(rem/600000));
+  if(st === 'locked' && !busy){ c.st = 'unlocking'; c.end = now + CHEST_H[c.k]*3600e3; return commit(); }
+  openModal({title:st === 'unlocking' ? 'Non vuoi aspettare?' : 'Un baule alla volta', color:'#5cf2ff',
+    lines:[st === 'unlocking' ? 'Il baule si apre tra ' + dur(rem) + '.' : 'Stai già sbloccando un altro baule.', 'Aprilo subito per ' + cost + ' gemme.'],
+    primary:{label:'Apri per ' + cost + ' gemme', bg:'#5cf2ff', fn:() => {
+      if(S.gems < cost) return spend('gems', 'Apertura immediata', cost, () => {});
+      closeModal(); S.gems -= cost; S.chests[i] = {k:'', st:'empty'}; openChestAnim(c.k);
+    }},
+    secondary:{label:'Aspetto', fn:closeModal}});
+}
+
+// ════════════════ Azioni ════════════════
+const A = {
+  tab(t){ S.tab = t; S.needGems = false; commit(); $('#main').scrollTop = 0; },
+  gems(){ S.tab = 'shop'; S.needGems = true; commit(); $('#main').scrollTop = 0; },
+  chest:clickChest,
+  play(){ startMatch(); },
+  buyGems(i){ const g = GEMS[i]; pay(num(g.n) + ' gemme', g.e, () => { S.gems += g.n; S.gemsBought += g.n; S.needGems = false; }); },
+  buyCometa(){ if(S.bought.cometa) return; pay('Pacchetto Cometa', 9.99, () => { S.bought.cometa = 1; S.cosOwned.s_cometa = 1; S.eq.skin = 's_cometa'; S.gems += 500; S.coins += 1000; }); },
+  buyStarter(){ if(S.bought.starter) return; pay('Pacchetto Inizio', 1.99, () => { S.bought.starter = 1; S.gems += 150; S.gemsBought += 150; S.bar.frag += 20; S.coins += 500; }); },
+  daily(i){
+    const d = DAILY[i], r = d.r[0];
+    if(S.bought[d.id] || (r.t === 'cos' && S.cosOwned[r.id])) return;
+    const give = () => { d.r.forEach(apply); S.bought[d.id] = 1; rewardModal('Offerta del giorno', d.r); };
+    if(d.free){ give(); return commit(); }
+    spend(d.coins ? 'coins' : 'gems', d.label, d.coins || d.gems, give);
+  },
+  shopChest(k){ spend('gems', CHEST_NAME(k), k === 'Oro' ? 180 : 60, () => openChestAnim(k)); },
+  coins(i){ const k = COINPACKS[i]; spend('gems', num(k.n) + ' monete', k.g, () => { S.coins += k.n; }); },
+  odds(){ S.showOdds = !S.showOdds; commit(); },
+  barTab(t){ S.barTab = t; commit(); },
+  cat(c){ S.cosCat = c; commit(); },
+  cos(id){
+    const o = cos(id);
+    if(S.cosOwned[id]){ S.eq[o.cat] = id; return commit(); }
+    if(o.pack) return openModal({title:'Skin leggendaria', color:'#ffc94d', lines:['Cometa si trova nel Pacchetto Cometa, nell\'ultimo livello del Pass Premium o, raramente, nei bauli d\'oro.'],
+      primary:{label:'Vai al negozio', bg:'#ff4d8d', fn:() => { closeModal(); A.tab('shop'); }}, secondary:{label:'Chiudi', fn:closeModal}});
+    if(o.pass) return openModal({title:'Premio del Pass Premium', color:'#ffc94d', lines:[rlabel({t:'cos', id}) + ' si ottiene solo con il Pass Premium.'],
+      primary:{label:'Vai al Pass', bg:'#ffc94d', fn:() => { closeModal(); A.tab('pass'); }}, secondary:{label:'Chiudi', fn:closeModal}});
+    spend('gems', rlabel({t:'cos', id}), o.gems, () => { S.cosOwned[id] = 1; S.eq[o.cat] = id; });
+  },
+  upgrade(){
+    const b = S.bar; if(b.lvl >= 5) return;
+    const need = NEED[b.lvl], cost = COST[b.lvl];
+    if(b.frag < need) return openModal({title:'Frammenti insufficienti', color:'#ff8fb6', lines:['Ti servono ancora ' + (need - b.frag) + ' frammenti di barra.'],
+      primary:{label:'Trovali nel negozio', bg:'#ff4d8d', fn:() => { closeModal(); A.tab('shop'); }}, secondary:{label:'Chiudi', fn:closeModal}});
+    if(S.coins < cost) return spend('coins', 'Potenziamento barra', cost, () => {});
+    b.frag -= need; b.lvl++; S.coins -= cost; commit(); buzz([20, 40, 60]);
+    const l = ['Lunghezza: +' + LEN[b.lvl] + '%', 'Velocità: +' + SPD[b.lvl] + '%'];
+    if(b.lvl === 3) l.push('Sbloccato: 1 colpo potente a partita');
+    openModal({title:'Barra · Liv. ' + b.lvl, color:'#5dffa0', lines:l, primary:{label:'Ottimo', bg:'#5dffa0', fn:closeModal}});
+  },
+  claim(side, i){
+    const reached = Math.min(10, Math.floor(S.passXp/100)), key = side + i;
+    if(S.claimed[key]) return;
+    if(side === 'p' && !S.premium) return A.premium();
+    if(i > reached) return openModal({title:'Livello ' + i, lines:['Ti servono altri ' + (i*100 - S.passXp) + ' punti Pass.'], note:'Gioca partite o compra livelli con le gemme.', primary:{label:'Ok', fn:closeModal}});
+    const r = (side === 'f' ? FREE : PREM)[i - 1];
+    apply(r); S.claimed[key] = 1; commit(); rewardModal('Pass · Livello ' + i, [r]);
+  },
+  premium(){ if(S.premium) return; pay('Pass Arena Premium', 4.99, () => { S.premium = true; }); },
+  tier(){ if(S.passXp >= 1000) return; spend('gems', 'Un livello del Pass', 30, () => { S.passXp = (Math.floor(S.passXp/100) + 1)*100; }); },
+  reset(){ openModal({title:'Ricominciare?', lines:['Tutti i progressi e gli acquisti finti verranno azzerati.'], primary:{label:'Ricomincia', bg:'#ff4d8d', fn:() => { closeModal(); S = fresh(); commit(); }}, secondary:{label:'Annulla', fn:closeModal}}); }
+};
+
+// ════════════════ Disegno delle schermate ════════════════
+const skinTexId = id => cos(id).tex || 'base';
+const padCanvas = (skin, w, h, cls = '') => `<canvas class="pv ${cls}" data-skin="${skin}" style="width:${w}px;height:${h}px"></canvas>`;
+function render(){
+  const reached = Math.min(10, Math.floor(S.passXp/100));
+  const passDot = [...Array(reached)].some((_, i) => !S.claimed['f' + (i + 1)] || (S.premium && !S.claimed['p' + (i + 1)]));
+  const b = S.bar, upReady = b.lvl < 5 && b.frag >= NEED[b.lvl] && S.coins >= COST[b.lvl];
+  $('#top').innerHTML = `
+    <button class="me" onclick="A.tab('profile')" aria-label="Profilo, livello ${S.lvl}"><div class="lvbox">${S.lvl}</div>
+      <div style="text-align:left"><div style="font-size:12px;font-weight:600">Tu</div><div class="xp"><i style="width:${S.xp/500*100}%"></i></div></div></button>
+    <div class="sp"></div>
+    <div class="pill">${I.trophy()}${num(S.trophies)}</div>
+    <div class="pill">${I.coin()}${num(S.coins)}</div>
+    <div class="pill g">${I.gem()}${num(S.gems)}<button class="plus" onclick="A.gems()" aria-label="Compra gemme">+</button></div>`;
+  const nb = (t, ico, lab, dot) => `<button class="${S.tab === t ? 'on' : ''}" onclick="A.tab('${t}')">${dot ? `<span class="nd" style="background:${dot}"></span>` : ''}${ico}${lab}</button>`;
+  $('#nav').innerHTML = nb('shop', I.shop, 'Negozio', S.bought.d_free ? '' : '#ff4d8d') + nb('bars', I.bar, 'Barra', upReady ? '#5dffa0' : '') +
+    nb('lobby', I.arena, 'Arena') + nb('pass', I.crown(22), 'Pass', passDot ? '#ff4d8d' : '') + nb('profile', I.user, 'Profilo');
+  $('#main').innerHTML = ({lobby:vLobby, shop:vShop, bars:vBars, pass:vPass, profile:vProfile})[S.tab](reached, passDot, upReady);
+  tick(true);
+}
+function vLobby(reached, passDot){
+  const now = Date.now(), offer = !S.bought.cometa && S.offerEnd > now;
+  const dots = [[110,190,4,'#3ff0ff',0],[268,195,3,'#ff4d8d',-1.8],[175,200,3,'#3ff0ff',-3.5],[228,188,4,'#fff',-5.2],[145,196,3,'#ff4d8d',-2.6],[300,192,3,'#3ff0ff',-6.1]]
+    .map(([x, y, s, c, d]) => `<div class="dot" style="left:calc(50% + ${x - 195}px);top:${y}px;width:${s}px;height:${s}px;background:${c};animation-delay:${d}s"></div>`).join('');
+  return `<div class="col">
+    ${offer ? `<button class="offer" onclick="A.tab('shop')"><div class="oico"><div class="comet" style="width:30px;height:7px"></div></div>
+      <div style="flex-grow:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:11px;font-weight:700;color:#ff8fb6;letter-spacing:.08em">OFFERTA A TEMPO · -75%</span>
+      <span style="font-size:15px;font-weight:700">Pacchetto Cometa</span><span style="font-size:12px;color:#b9c6d8">Termina tra <b class="tab" style="color:#ff8fb6" data-t="offer"></b></span></div>
+      <span style="font-size:15px;font-weight:700;color:#ff8fb6">€ 9,99</span></button>` : ''}
+    <div class="show"><div class="tl">PONG ARENA</div><div class="tr">Arena Neon · ${num(S.trophies)} trofei</div>${dots}
+      <div style="position:absolute;left:0;right:0;top:92px;display:flex;justify-content:center">${padCanvas(S.eq.skin, 260, 70, 'floaty')}</div>
+      <div class="bt"><span style="font-size:16px;font-weight:700">La tua barra</span><span class="chip">Skin ${esc(cos(S.eq.skin).name)}</span>
+        <span style="font-size:12px;font-weight:700;color:var(--cy)">Liv. ${S.bar.lvl}</span><button class="smbtn" onclick="A.tab('bars')">Modifica</button></div></div>
+    <button class="passbtn" onclick="A.tab('pass')"><span style="color:var(--gd)">${I.crown(22)}</span>
+      <div style="flex-grow:1;display:flex;flex-direction:column;gap:5px"><div class="hrow" style="font-size:13px"><b>Pass Arena · Liv. ${reached}</b><span style="color:var(--mu)">${reached >= 10 ? 'Completato' : S.passXp % 100 + '/100'}</span></div>
+      <div class="bar"><i style="width:${reached >= 10 ? 100 : S.passXp % 100}%;background:var(--gd)"></i></div></div>
+      ${passDot ? '<span class="tag">Premi!</span>' : ''}</button>
+    <div class="g4">${S.chests.map((c, i) => {
+      const st = chestState(c), gold = c.k === 'Oro', col = gold ? '#ffc94d' : '#c9d3e0';
+      const style = st === 'empty' ? 'border:1px dashed #263044;background:#0a0d14' : st === 'ready' ? `border:1px solid ${col};background:#151a24;box-shadow:0 0 14px ${gold ? 'rgba(255,201,77,.4)' : 'rgba(201,211,224,.3)'}` : 'border:1px solid #243047;background:#0e131e';
+      const sub = st === 'empty' ? 'Slot libero' : st === 'ready' ? 'APRI!' : st === 'unlocking' ? `<span data-t="c${i}"></span>` : CHEST_H[c.k] + 'h';
+      return `<button class="chest" style="${style}" onclick="A.chest(${i})">${st === 'empty' ? '' : I.chest(col)}
+        <span style="font-size:11px;font-weight:700">${st === 'empty' ? 'Vuoto' : gold ? 'Oro' : 'Argento'}</span>
+        <span class="tab" style="font-size:11px;color:${st === 'ready' ? '#5dffa0' : '#8d9bb0'}">${sub}</span></button>`; }).join('')}</div>
+    <button class="play" onclick="A.play()"><span class="mi" style="font-size:26px;letter-spacing:.12em">GIOCA</span><span style="font-size:12px;font-weight:600">Tu contro la CPU · vince chi arriva a 3</span></button>
+  </div>`;
+}
+function gemGrid(){
+  return `<div class="g2">${GEMS.map((g, i) => `<button class="card" style="height:108px" onclick="A.buyGems(${i})">${g.badge ? `<span class="badge">${g.badge}</span>` : ''}${I.gem(26)}
+    <span style="font-size:16px;font-weight:700">${num(g.n)} gemme</span><span style="font-size:13px;font-weight:700;color:#ff8fb6">€ ${eu(g.e)}</span></button>`).join('')}</div>`;
+}
+function vShop(){
+  const cb = !!S.bought.cometa, sb = !!S.bought.starter;
+  return `<div class="col">
+    ${S.needGems ? `<div style="font-size:13px;font-weight:700;color:#ff8fb6">Ti servono gemme</div>${gemGrid()}` : ''}
+    <div class="box pinkbox"><div class="hrow"><span style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#ff8fb6">OFFERTA A TEMPO</span><span class="tab" style="font-size:12px;color:#ff8fb6" data-t="offer"></span></div>
+      <div style="display:flex;gap:12px;align-items:center"><div style="width:76px;height:76px;border-radius:12px;background:#24101d;display:flex;align-items:center;justify-content:center;flex-shrink:0">${padCanvas('s_cometa', 70, 30)}</div>
+      <div style="display:flex;flex-direction:column;gap:3px"><span style="font-size:17px;font-weight:700">Pacchetto Cometa</span><span style="font-size:12px;color:#c9d3e0">Skin leggendaria Cometa · 500 gemme · 1.000 monete</span>
+      <span class="small"><s>€ 39,99</s> · solo per le prossime ore</span></div></div>
+      <button class="bigbtn" onclick="A.buyCometa()" ${cb ? 'disabled' : ''} style="background:${cb ? '#3a2a33' : '#ff4d8d'};color:#1a0610">${cb ? 'Acquistato' : 'Compra · € 9,99'}</button></div>
+    <div class="box" style="align-items:center"><div style="display:flex;flex-direction:column;gap:3px;flex-grow:1"><span style="font-size:11px;font-weight:700;color:var(--cy);letter-spacing:.08em">SOLO PER TE · UNA VOLTA SOLA</span>
+      <span style="font-size:15px;font-weight:700">Pacchetto Inizio</span><span style="font-size:12px;color:#c9d3e0">150 gemme · 20 frammenti di barra · 500 monete</span></div>
+      <button class="bigbtn" onclick="A.buyStarter()" ${sb ? 'disabled' : ''} style="min-width:88px;background:${sb ? '#2a3244' : '#3ff0ff'};color:#1a0610;font-size:14px">${sb ? 'Preso' : '€ 1,99'}</button></div>
+    <div class="hrow"><span class="h">Offerte del giorno</span><span class="small tab">nuove tra <span data-t="daily"></span></span></div>
+    <div class="g2">${DAILY.map((d, i) => {
+      const r = d.r[0], done = !!S.bought[d.id] || (r.t === 'cos' && S.cosOwned[r.id]);
+      const sw = r.t === 'coins' ? 'background:#ffc94d' : r.t === 'frag' ? 'background:#3ff0ff;box-shadow:0 0 8px #3ff0ff' : cos(r.id).sw;
+      return `<button class="card" style="height:112px;${done ? 'opacity:.45' : ''}" onclick="A.daily(${i})" ${done ? 'disabled' : ''}><div style="width:46px;height:8px;border-radius:3px;${sw}"></div>
+        <span style="font-size:13px;font-weight:700">${d.label}</span><span style="font-size:11px;color:var(--mu)">${d.free ? 'Regalo di oggi' : d.was ? 'invece di ' + d.was + ' gemme' : 'frammenti di barra'}</span>
+        <span style="font-size:13px;font-weight:700;color:${d.free ? '#5dffa0' : d.coins ? '#ffc94d' : '#5cf2ff'}">${done ? 'Preso' : d.free ? 'GRATIS' : d.coins ? num(d.coins) + ' monete' : d.gems + ' gemme'}</span></button>`; }).join('')}</div>
+    <div class="hrow"><span class="h">Bauli</span><button onclick="A.odds()" style="color:var(--cy);font-size:12px;text-decoration:underline;padding:6px 0">${S.showOdds ? 'Nascondi probabilità' : 'Probabilità'}</button></div>
+    <div class="g2">${['Argento', 'Oro'].map(k => `<button class="card" style="height:120px" onclick="A.shopChest('${k}')">${I.chest(k === 'Oro' ? '#ffc94d' : '#c9d3e0', 34)}
+      <span style="font-size:14px;font-weight:700">${CHEST_NAME(k)}</span><span style="font-size:13px;font-weight:700;color:#5cf2ff">${k === 'Oro' ? 180 : 60} gemme</span></button>`).join('')}</div>
+    ${S.showOdds ? `<div class="odds">Baule d'argento: 120–200 monete · 8–14 frammenti di barra.<br>Baule d'oro: 500–600 monete · 20–30 frammenti di barra · 5% di probabilità: skin Cometa (leggendaria).</div>` : ''}
+    <span class="h">Monete</span>
+    <div class="g2">${COINPACKS.map((k, i) => `<button class="card" style="height:92px" onclick="A.coins(${i})">${I.coin(24)}<span style="font-size:15px;font-weight:700">${num(k.n)} monete</span>
+      <span style="font-size:13px;font-weight:700;color:#5cf2ff">${k.g} gemme</span></button>`).join('')}</div>
+    ${S.needGems ? '' : `<span class="h">Gemme</span>${gemGrid()}`}
+  </div>`;
+}
+function vBars(){
+  const b = S.bar, max = b.lvl >= 5, need = max ? 0 : NEED[b.lvl], enough = !max && b.frag >= need, ready = enough && S.coins >= COST[b.lvl];
+  const up = S.barTab === 'up';
+  let body;
+  if(up){
+    const stats = [
+      ['Lunghezza barra', '+' + LEN[b.lvl] + '%', max ? '' : '→ +' + LEN[b.lvl + 1] + '%', LEN[b.lvl]/8*100],
+      ['Velocità', '+' + SPD[b.lvl] + '%', max ? '' : '→ +' + SPD[b.lvl + 1] + '%', SPD[b.lvl]/12*100],
+      ['Colpo potente', b.lvl >= 3 ? '1 a partita' : 'Bloccato', b.lvl === 2 ? '→ si sblocca' : '', b.lvl >= 3 ? 100 : 0]];
+    body = `<div class="panel"><div class="hrow"><span style="font-size:18px;font-weight:700">La tua barra</span><span class="mi" style="font-size:13px;color:var(--cy)">LIV. ${b.lvl}/5</span></div>
+      <div class="lvtrack">${[1,2,3,4,5].map(n => `<div><div class="ln" style="background:${n === 1 ? 'transparent' : n <= b.lvl ? '#3ff0ff' : '#2d3749'}"></div>
+        <div class="n" style="${n <= b.lvl ? 'background:#3ff0ff;color:#04161a;box-shadow:0 0 10px rgba(63,240,255,.5)' : n === b.lvl + 1 ? 'border:2px solid #5dffa0;color:#5dffa0' : 'border:1px solid #2d3749;color:#5b677a'}">${n}</div></div>`).join('')}</div>
+      ${stats.map(([n, v, nx, p]) => `<div class="stat"><div class="r"><span style="color:#c9d3e0">${n}</span><span><b>${v}</b> <span style="color:#5dffa0;font-weight:700">${nx}</span></span></div>
+        <div class="bar" style="height:6px"><i style="width:${p}%;background:#3ff0ff"></i></div></div>`).join('')}
+      <div style="display:flex;align-items:center;gap:8px">${I.frag()}<div class="frag"><i style="width:${max ? 100 : Math.min(100, b.frag/need*100)}%;background:${enough ? '#5dffa0' : '#3ff0ff'}"></i>
+        <span>${max ? 'Livello massimo' : b.frag + '/' + need + ' frammenti di barra'}</span></div></div>
+      <button onclick="A.upgrade()" ${max ? 'disabled' : ''} style="height:56px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;${max ? 'background:#1a2130;color:#5b677a' : ready ? 'background:#5dffa0;color:#06170d;box-shadow:0 0 14px rgba(93,255,160,.4)' : 'background:#1f2735;color:#a9b8cc'}">
+        <span style="font-size:15px;font-weight:700">${max ? 'Livello massimo' : 'Potenzia a Liv. ' + (b.lvl + 1)}</span>${max ? '' : `<span style="font-size:12px;font-weight:600">${num(COST[b.lvl])} monete</span>`}</button></div>
+      <div class="small" style="line-height:1.4">I frammenti di barra si trovano nei bauli, nel Pass e nel negozio. Potenziamenti leggeri e con un tetto: al livello 5 la barra è più lunga dell'8% e più veloce del 12%. L'aspetto non cambia il gioco.</div>`;
+  } else {
+    body = `<div class="cats">${CATS.map(k => `<button class="${k.id === S.cosCat ? 'on' : ''}" onclick="A.cat('${k.id}')">${k.label}</button>`).join('')}</div>
+      <div class="g3">${COS.filter(o => o.cat === S.cosCat).map(o => {
+        const owned = !!S.cosOwned[o.id], inUse = S.eq[o.cat] === o.id;
+        const st = inUse ? 'In uso' : owned ? 'Usa' : o.pack ? 'Offerta' : o.pass ? 'Pass Premium' : o.gems + ' gemme';
+        const stc = inUse ? '#3ff0ff' : owned ? '#e8f4ff' : (o.pass || o.pack) ? '#ffc94d' : '#5cf2ff';
+        return `<button class="card" style="height:116px;${inUse ? 'border:2px solid #3ff0ff' : ''}" onclick="A.cos('${o.id}')">${o.badge && !owned ? `<span class="badge" style="font-size:9px">${o.badge}</span>` : ''}
+          ${o.cat === 'skin' ? padCanvas(o.id, 96, 30) : `<div class="sw" style="${o.sw}"></div>`}
+          <span style="font-size:13px;font-weight:700">${o.name}</span><span style="font-size:11px;font-weight:700;color:${stc}">${st}</span></button>`; }).join('')}</div>
+      <div class="small" style="line-height:1.4">Scia, colpo e gol si vedono durante la partita.</div>`;
+  }
+  return `<div class="col"><div class="seg"><button class="${up ? 'on' : ''}" onclick="A.barTab('up')">Potenzia</button><button class="${up ? '' : 'on'}" onclick="A.barTab('look')">Aspetto</button></div>
+    <div class="prev">${padCanvas(S.eq.skin, 240, 60, 'floaty')}</div>${body}</div>`;
+}
+function vPass(reached){
+  const cell = (side, n) => {
+    const r = (side === 'f' ? FREE : PREM)[n - 1], got = !!S.claimed[side + n], ok = n <= reached, lockedP = side === 'p' && !S.premium;
+    const st = got ? 'Riscattato' : lockedP ? 'Bloccato' : ok ? 'Riscatta!' : 'Liv. ' + n;
+    const style = got ? 'border:1px solid #1f2735;background:#0b0e15;color:#5b677a' : ok && !lockedP ? 'border:1px solid #5dffa0;background:#0d1a14;color:#e8f4ff;box-shadow:0 0 10px rgba(93,255,160,.25)'
+      : side === 'p' ? 'border:1px solid #3a2f12;background:#120f07;color:#c9b98d' : 'border:1px solid #243047;background:#0e131e;color:#a9b8cc';
+    return `<button class="tc" style="${style}" onclick="A.claim('${side}',${n})"><span>${esc(rlabel(r))}</span><span style="font-size:11px">${st}</span></button>`;
+  };
+  return `<div class="col"><div class="passhead"><div class="hrow"><span class="mi" style="font-size:15px;color:var(--gd)">Pass Arena</span><span style="font-size:12px;color:#c9b98d">Stagione 1 · finisce tra <span data-t="pass"></span></span></div>
+    <div style="display:flex;align-items:center;gap:10px"><span class="mi" style="font-size:20px;color:var(--gd)">${reached}</span><div class="bar" style="flex-grow:1;height:8px;background:#2a2412"><i style="width:${reached >= 10 ? 100 : S.passXp % 100}%;background:var(--gd)"></i></div>
+    <span style="font-size:12px;color:#c9b98d">${reached >= 10 ? 'Completato' : S.passXp % 100 + '/100'}</span></div>
+    <div class="g2"><button class="bigbtn" onclick="A.premium()" ${S.premium ? 'disabled' : ''} style="font-size:14px;${S.premium ? 'background:#2a2412;color:#c9b98d' : 'background:#ffc94d;color:#1a1405;box-shadow:0 0 14px rgba(255,201,77,.35)'}">${S.premium ? 'Premium attivo' : 'Premium · € 4,99'}</button>
+    <button class="bigbtn" onclick="A.tier()" style="border:1px solid #5a4a1c;background:#1c170a;color:#ffe6a3;font-size:13px">+1 livello · 30 gemme</button></div></div>
+    <div class="trow" style="font-size:11px;font-weight:700;color:var(--mu);letter-spacing:.08em"><span style="text-align:center">GRATIS</span><span></span><span style="text-align:center;color:var(--gd)">PREMIUM</span></div>
+    ${[1,2,3,4,5,6,7,8,9,10].map(n => `<div class="trow">${cell('f', n)}<div class="tn" style="${n <= reached ? 'background:#ffc94d;color:#1a1405' : 'background:#1a1f2b;color:#8d9bb0'}">${n}</div>${cell('p', n)}</div>`).join('')}
+  </div>`;
+}
+function vProfile(){
+  const ownedCos = COS.filter(o => S.cosOwned[o.id]).length, n = S.purchases.length;
+  const stats = [['Partite', num(S.matches)], ['Vittorie', num(S.wins)], ['% vittorie', Math.round(S.wins/Math.max(1, S.matches)*100) + '%'], ['Trofei', num(S.trophies)]];
+  const prog = [['Livello barra', S.bar.lvl + '/5', S.bar.lvl/5*100], ['Aspetti', ownedCos + '/' + COS.length, ownedCos/COS.length*100]];
+  return `<div class="col"><div style="display:flex;align-items:center;gap:12px"><div class="lvbox" style="width:60px;height:60px;border-radius:14px;font-size:22px">${S.lvl}</div>
+    <div><div style="font-size:20px;font-weight:700">Tu</div><div class="small">Livello ${S.lvl} · Arena Neon · ${num(S.trophies)} trofei</div></div></div>
+    <div class="g2">${stats.map(([l, v]) => `<div class="stbox"><span style="font-size:11px;color:var(--mu)">${l}</span><span style="font-size:20px;font-weight:700">${v}</span></div>`).join('')}</div>
+    <div class="stbox" style="gap:8px;padding:12px"><span style="font-size:13px;font-weight:700">Progressi</span>
+      ${prog.map(([l, t, p]) => `<div><div class="hrow" style="font-size:12px;color:#c9d3e0;margin-bottom:4px"><span>${l}</span><span>${t}</span></div><div class="bar" style="height:6px"><i style="width:${p}%;background:#3ff0ff"></i></div></div>`).join('')}</div>
+    <div class="box pinkbox" style="gap:8px"><span style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#ff8fb6">QUANTO HAI SPESO</span>
+      <span class="mi" style="font-size:30px">€ ${eu(S.spent)}</span>
+      <span style="font-size:12px;color:#c9d3e0">${n ? n + (n === 1 ? ' acquisto' : ' acquisti') + ' · ' + num(S.gemsBought) + ' gemme comprate con soldi veri' : 'Nessun acquisto finora'}</span>
+      ${S.purchases.map(p => `<div class="hrow" style="font-size:12px;border-top:1px solid #3a1628;padding-top:6px"><span>${esc(p.label)}</span><b>${p.price}</b></div>`).join('')}
+      <span style="font-size:11px;color:#c99bb0;line-height:1.4">Nei giochi veri questo riepilogo di solito non c'è: gemme e pacchetti nascondono il prezzo in euro.</span></div>
+    <button class="btn2" onclick="A.reset()">Ricomincia la demo</button>
+    <div class="small" style="text-align:center;font-size:11px">Pong Arena · Lobby · versione ${BUILD}</div></div>`;
+}
+
+// timer che scorrono (senza ridisegnare tutta la pagina)
+let chestSig = '';
+function tick(force){
+  const now = Date.now();
+  if(S.day !== new Date().toDateString()){ S.day = new Date().toDateString(); for(const k of Object.keys(S.bought)) if(k.startsWith('d_')) delete S.bought[k]; save(); if(!force) return render(); }
+  const sig = S.chests.map(chestState).join();
+  if(!force && sig !== chestSig){ chestSig = sig; return render(); }
+  chestSig = sig;
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const t = el.dataset.t;
+    el.textContent = t === 'offer' ? clock(S.offerEnd - now) : t === 'daily' ? clock(new Date(now).setHours(24, 0, 0, 0) - now)
+      : t === 'pass' ? days(S.t0 + (12*24 + 4)*3600e3 - now) : dur((S.chests[+t.slice(1)] || {}).end - now);
+  });
+  if(!force && S.tab === 'lobby' && !S.bought.cometa && S.offerEnd <= now && document.querySelector('.offer')) render();
+}
+setInterval(() => { if(!G.on) tick(false); }, 1000);
+// anteprime animate delle barre
+function drawPreviews(now){
+  document.querySelectorAll('canvas.pv').forEach(cv => { if(cv.dataset.skin) drawSkinPreview(cv, skinTexId(cv.dataset.skin), now, '#3ff0ff'); });
+}
+
+// ════════════════ PARTITA: tu contro la CPU, visuale 3D dal tuo lato ════════════════
+const gcv = $('#gcv'), gctx = gcv.getContext('2d');
+const CTRL = .27;
+const G = {on:false};
+let V = null, pad = {id:null, lx:0, finger:null, touched:false};
+function startMatch(){
+  const lv = S.bar.lvl;
+  Object.assign(G, {on:true, ph:'cd', phEnd:0, sc:[0, 0], ball:{x:FW/2, y:FH/2, vx:0, vy:0}, pend:{vx:0, vy:0},
+    myY:FH/2, myT:FH/2, cpuY:FH/2, cpuErr:0, len:PL*(1 + LEN[lv]/100), maxV:BASE_V*(1 + SPD[lv]/100),
+    power:{have:lv >= 3, armed:false, used:false}, fx:[], goalT:-1e9, flashT:-1e9, trail:[], acc:0, last:performance.now(), overT:0, win:false, keys:{}});
+  pad = {id:null, lx:0, finger:null, touched:false};
+  $('#game').classList.remove('hidden'); gResize();
+  serve(Math.random() < .5 ? 1 : -1, 3000);
+  requestAnimationFrame(gFrame);
+}
+function serve(dir, delay){
+  const a = (Math.random() - .5)*.8;
+  G.ball = {x:FW/2, y:FH/2, vx:0, vy:0}; G.trail = [];
+  G.pend = {vx:Math.cos(a)*SPEED0*dir, vy:Math.sin(a)*SPEED0};
+  G.ph = 'cd'; G.phEnd = performance.now() + delay;
+}
+function hitFx(){
+  const f3 = G.f3, p = f3.P(f3.u(G.ball.y), BR, f3.z(G.ball.x));
+  G.fx.push({x:p[0], y:p[1], t0:performance.now(), type:S.eq.colpo, seed:Math.random()*6});
+}
+function bounce(side, py, len, dir, now){
+  const b = G.ball, off = clamp((b.y - py)/(len/2), -1, 1), a = off*1.05;
+  let sp = Math.min(Math.hypot(b.vx, b.vy)*SPEEDUP, SMAX);
+  if(side === 'L'){
+    if(G.power.armed){ sp = Math.min(sp*1.5, SMAX*1.25); G.power.armed = false; G.power.used = true; G.flashT = now; buzz(50); }
+    else buzz(12);
+    hitFx(); G.cpuErr = (Math.random() - .5)*.16;
+  }
+  b.vx = Math.cos(a)*sp*dir; b.vy = Math.sin(a)*sp;
+}
+function point(side, now){
+  G.sc[side === 'L' ? 0 : 1]++;
+  if(side === 'L'){ G.goalT = now; buzz([30, 50, 30]); } else buzz([20, 40, 20]);
+  if(G.sc[0] >= WIN || G.sc[1] >= WIN){ G.ph = 'over'; G.win = G.sc[0] >= WIN; G.overT = now; G.ball.vx = G.ball.vy = 0; return; }
+  serve(side === 'L' ? 1 : -1, 1200);
+}
+function gStep(dt, now){
+  // barre
+  const kd = (G.keys.ArrowRight || G.keys.d ? 1 : 0) - (G.keys.ArrowLeft || G.keys.a ? 1 : 0);
+  if(kd) G.myT = clamp(G.myT + kd*G.maxV*dt, G.len/2, FH - G.len/2);
+  const d = G.myT - G.myY; G.myY += Math.sign(d)*Math.min(Math.abs(d), G.maxV*dt);
+  const coming = G.ball.vx > 0 && G.ph === 'play';
+  const target = coming ? G.ball.y + G.cpuErr + Math.sin(now/700)*.05 : FH/2;
+  const dc = target - G.cpuY; G.cpuY = clamp(G.cpuY + Math.sign(dc)*Math.min(Math.abs(dc), .95*dt), PL/2, FH - PL/2);
+  // pallina
+  if(G.ph === 'cd'){ if(now >= G.phEnd){ G.ph = 'play'; G.ball.vx = G.pend.vx; G.ball.vy = G.pend.vy; } return; }
+  if(G.ph !== 'play') return;
+  const b = G.ball, x0 = b.x;
+  b.x += b.vx*dt; b.y += b.vy*dt;
+  if(b.y < BR){ b.y = 2*BR - b.y; b.vy = Math.abs(b.vy); }
+  if(b.y > FH - BR){ b.y = 2*(FH - BR) - b.y; b.vy = -Math.abs(b.vy); }
+  const lf = PX + PT/2, rf = FW - PX - PT/2;
+  if(b.vx < 0 && x0 - BR >= lf - 1e-4 && b.x - BR <= lf && Math.abs(b.y - G.myY) <= G.len/2 + BR){ b.x = lf + BR; bounce('L', G.myY, G.len, 1, now); }
+  if(b.vx > 0 && x0 + BR <= rf + 1e-4 && b.x + BR >= rf && Math.abs(b.y - G.cpuY) <= PL/2 + BR){ b.x = rf - BR; bounce('R', G.cpuY, PL, -1, now); }
+  if(b.x < -BR*3) point('R', now); else if(b.x > FW + BR*3) point('L', now);
+}
+function gResize(){
+  if(!G.on) return;
+  const dpr = devicePixelRatio || 1, w = innerWidth, h = innerHeight;
+  gcv.width = w*dpr; gcv.height = h*dpr; gctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const top = 52, gh = h*(1 - CTRL), fs = Math.round(Math.min(w*.1, 40)), lh = Math.min(w*.24, gh*.15);
+  G.f3 = new Field3D('L'); G.f3.fit(0, 0, w, gh, top + lh + fs*1.25);
+  V = {w, h, gh, fs, lh, top};
+  const bw = Math.min(170, w*.42); V.pw = {x:w - 14 - bw, y:gh + 12 + 10, w:bw - 10, h:40};
+}
+addEventListener('resize', gResize);
+const TRAILS = {
+  t_neon:(i, n) => `rgba(63,240,255,${i/n*.5})`,
+  t_fire:(i, n) => `hsla(${15 + i*4},100%,${55 + i*2}%,${i/n*.65})`,
+  t_rain:(i, n) => `hsla(${i*36},95%,60%,${i/n*.6})`
+};
+function drawFx(c, now){
+  G.fx = G.fx.filter(f => now - f.t0 < 600);
+  for(const f of G.fx){
+    const t = (now - f.t0)/600;
+    c.save();
+    if(f.type === 'h_wave'){ c.strokeStyle = `rgba(63,240,255,${1 - t})`; c.lineWidth = 3; c.beginPath(); c.ellipse(f.x, f.y, 10 + 70*t, 4 + 26*t, 0, 0, Math.PI*2); c.stroke(); }
+    else if(f.type === 'h_pixel'){ for(let i = 0; i < 12; i++){ const a = f.seed + i*.52, r = 12 + 60*t; c.fillStyle = i % 2 ? `rgba(255,77,141,${1 - t})` : `rgba(63,240,255,${1 - t})`; c.fillRect(f.x + Math.cos(a)*r - 4, f.y + Math.sin(a)*r*.5 - 4 - 30*t, 8, 8); } }
+    else { c.strokeStyle = `rgba(255,255,255,${1 - t})`; c.lineWidth = 2; for(let i = 0; i < 10; i++){ const a = f.seed + i*.63, r0 = 6 + 20*t, r1 = r0 + 16*(1 - t); c.beginPath(); c.moveTo(f.x + Math.cos(a)*r0, f.y + Math.sin(a)*r0*.6); c.lineTo(f.x + Math.cos(a)*r1, f.y + Math.sin(a)*r1*.6); c.stroke(); } }
+    c.restore();
+  }
+}
+function drawGoal(c, now){
+  const t = (now - G.goalT)/1400; if(t < 0 || t > 1) return;
+  const W = V.w, cx = W/2, cy = V.gh*.55, k = t < .15 ? t/.15 : 1, a = t > .75 ? (1 - t)/.25 : 1;
+  c.save(); c.globalAlpha = a;
+  if(S.eq.gol === 'g_fire'){
+    for(let j = 0; j < 3; j++){ const bx = cx + (j - 1)*W*.28, by = cy - V.gh*.18 + (j % 2)*30, tt = clamp(t*1.4 - j*.12, 0, 1);
+      for(let i = 0; i < 16; i++){ const an = i/16*Math.PI*2, r = 70*tt; c.fillStyle = ['#ffd84d', '#ff4d8d', '#3ff0ff'][(i + j) % 3]; c.globalAlpha = a*(1 - tt*.8);
+        c.beginPath(); c.arc(bx + Math.cos(an)*r, by + Math.sin(an)*r, 3, 0, Math.PI*2); c.fill(); } }
+    c.globalAlpha = a;
+  }
+  if(S.eq.gol === 'g_baffi'){ c.save(); c.translate(cx, cy - W*.16); c.rotate(Math.sin(now/90)*.25); drawSkinAt(c, 'baffi', 0, 0, W*.45, now, '#fff'); c.restore(); }
+  c.font = `${Math.round(W*.16*k)}px Michroma, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillStyle = '#3ff0ff'; c.shadowColor = '#3ff0ff'; c.shadowBlur = 24; c.fillText('GOL!', cx, cy);
+  c.restore();
+}
+function gFrame(now){
+  if(!G.on) return;
+  let dt = Math.min(.1, (now - G.last)/1000); G.last = now; G.acc += dt;
+  while(G.acc >= STEP){ gStep(STEP, now); G.acc -= STEP; }
+  if(G.ph === 'play'){ G.trail.push([G.ball.x, G.ball.y]); if(G.trail.length > 12) G.trail.shift(); }
+  gDraw(now);
+  if(G.ph === 'over' && now - G.overT > 2600) return endMatch(false);
+  requestAnimationFrame(gFrame);
+}
+function gDraw(now){
+  const c = gctx, W = V.w, H = V.h, gh = V.gh;
+  c.fillStyle = '#05070b'; c.fillRect(0, 0, W, H);
+  const trail = S.eq.scia === 't_none' || G.ph !== 'play' ? [] : G.trail;
+  G.f3.draw(c, {ball:G.ph === 'over' ? null : G.ball, trail, trailCol:TRAILS[S.eq.scia], myY:G.myY, oppY:G.cpuY, showOpp:true, ph:G.ph, cd:G.phEnd - now,
+    mySkin:skinTexId(S.eq.skin), oppSkin:'base', myLen:G.len, oppLen:PL,
+    hint:G.sc[0] + G.sc[1] === 0 ? 'Usa il touchpad qui sotto per muovere la barra' : '',
+    msg:G.ph === 'over' ? [G.win ? 'HAI VINTO!' : 'HAI PERSO', G.sc[0] + ' – ' + G.sc[1]] : null}, now);
+  drawFx(c, now);
+  if(now - G.flashT < 350){ c.fillStyle = `rgba(255,201,77,${.25*(1 - (now - G.flashT)/350)})`; c.fillRect(0, 0, W, gh); }
+  drawGoal(c, now);
+  logoHud(c, W/2, V.top, V.lh/.34, V.lh, now, 'TU CONTRO LA CPU · PRIMO A 3');
+  const fs = V.fs, gap = fs*.95, sy = V.top + V.lh + fs*.62;
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `700 ${fs}px "Chakra Petch", monospace`;
+  c.fillStyle = COL.L; c.fillText(G.sc[0], W/2 - gap, sy); c.fillStyle = '#5b6275'; c.fillText(':', W/2, sy); c.fillStyle = COL.R; c.fillText(G.sc[1], W/2 + gap, sy);
+  // touchpad
+  c.fillStyle = '#12151d'; c.fillRect(0, gh, W, H - gh); c.fillStyle = '#2a3040'; c.fillRect(0, gh, W, 1);
+  const pm = 14, px = pm, py = gh + 12, pw = W - 2*pm, ph = H - gh - 34;
+  c.strokeStyle = '#2f3649'; c.lineWidth = 1.5; c.setLineDash([4, 5]); rr(c, px, py, pw, ph, 14); c.stroke(); c.setLineDash([]);
+  c.fillStyle = COL.L + '0a'; rr(c, px, py, pw, ph, 14); c.fill();
+  const u01 = (G.myY - G.len/2)/(FH - G.len), gx = px + 12 + (pw - 24)*u01;
+  c.fillStyle = COL.L + '59'; c.fillRect(gx - 14, py + ph - 6, 28, 3);
+  if(pad.finger){ c.fillStyle = COL.L + '40'; c.beginPath(); c.arc(pad.finger[0], pad.finger[1], 22, 0, Math.PI*2); c.fill(); c.strokeStyle = COL.L; c.lineWidth = 2; c.stroke(); }
+  // colpo potente
+  const b = V.pw, P = G.power;
+  const label = !P.have ? 'COLPO POTENTE · LIV. 3' : P.used ? 'COLPO USATO' : P.armed ? 'PRONTO!' : 'COLPO POTENTE';
+  rr(c, b.x, b.y, b.w, b.h, 10);
+  c.fillStyle = !P.have || P.used ? '#171b25' : P.armed ? `rgba(255,201,77,${.55 + .35*Math.sin(now/120)})` : '#2a2410'; c.fill();
+  c.strokeStyle = !P.have || P.used ? '#2a3040' : '#ffc94d'; c.lineWidth = 1.5; c.stroke();
+  c.fillStyle = !P.have || P.used ? '#5b6275' : P.armed ? '#1a1405' : '#ffc94d'; c.font = `700 ${Math.round(Math.min(W*.03, 12))}px "Chakra Petch", sans-serif`;
+  c.fillText(label, b.x + b.w/2, b.y + b.h/2 + 1);
+  c.font = `500 ${Math.round(Math.min(W*.034, 13))}px system-ui,sans-serif`;
+  c.fillStyle = pad.touched ? '#6e7589' : `rgba(230,233,240,${.55 + .35*Math.sin(now/400)})`;
+  c.fillText(pad.touched ? 'appoggia il dito e trascina' : 'Appoggia qui il dito e trascina', W/2, H - 12);
+}
+const inPw = (x, y) => V && x >= V.pw.x && x <= V.pw.x + V.pw.w && y >= V.pw.y && y <= V.pw.y + V.pw.h;
+function armPower(){ const P = G.power; if(P.have && !P.used && !P.armed){ P.armed = true; buzz(20); } }
+gcv.addEventListener('pointerdown', e => {
+  if(!G.on || !V) return; const r = gcv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  if(y < V.gh) return;
+  e.preventDefault();
+  if(inPw(x, y)) return armPower();
+  gcv.setPointerCapture(e.pointerId); pad = {id:e.pointerId, lx:x, finger:[x, y], touched:true};
+});
+gcv.addEventListener('pointermove', e => {
+  if(pad.id !== e.pointerId) return; const r = gcv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  G.myT = clamp(G.myT + (x - pad.lx)/(V.w - 40)*1.3*(FH - G.len), G.len/2, FH - G.len/2); pad.lx = x; pad.finger = [x, y];
+});
+const padUp = e => { if(pad.id === e.pointerId){ pad.id = null; pad.finger = null; } };
+gcv.addEventListener('pointerup', padUp); gcv.addEventListener('pointercancel', padUp);
+addEventListener('keydown', e => { if(!G.on) return; G.keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = true; if(e.key === ' '){ e.preventDefault(); armPower(); } });
+addEventListener('keyup', e => { if(G.on) G.keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = false; });
+$('#gExit').onclick = () => {
+  if(G.ph === 'over') return endMatch(false);
+  openModal({title:'Abbandonare?', lines:['Abbandonare la partita conta come sconfitta.'], primary:{label:'Abbandona', bg:'#ff4d8d', fn:() => { closeModal(); endMatch(true); }}, secondary:{label:'Continua a giocare', fn:closeModal}});
+};
+function endMatch(quit){
+  if(!G.on) return;
+  G.on = false; $('#game').classList.add('hidden');
+  const win = !quit && G.win, sc = G.sc.slice();
+  S.matches++; S.xp += 30; if(S.xp >= 500){ S.xp -= 500; S.lvl++; }
+  let lines, note = '';
+  if(win){
+    S.wins++; S.trophies += 28; S.coins += 40; S.passXp = Math.min(1000, S.passXp + 40);
+    lines = ['+28 trofei', '+40 monete', '+40 punti Pass'];
+    const slot = S.chests.findIndex(c => c.st === 'empty');
+    if(slot >= 0){ const k = Math.random() < .2 ? 'Oro' : 'Argento'; S.chests[slot] = {k, st:'locked'}; lines.push(CHEST_NAME(k) + ' ottenuto!'); }
+    else note = 'Slot bauli pieni: questo baule è andato perso. Aprine uno per liberare spazio.';
+  } else {
+    S.trophies = Math.max(0, S.trophies - 18); S.passXp = Math.min(1000, S.passXp + 20);
+    lines = ['-18 trofei', '+20 punti Pass'];
+  }
+  S.tab = 'lobby'; commit();
+  if(win) openModal({title:'VITTORIA ' + sc[0] + '–' + sc[1], color:'#3ff0ff', lines, note, primary:{label:'Continua', fn:closeModal}});
+  else openModal({title:(quit ? 'ABBANDONATA ' : 'SCONFITTA ') + sc[0] + '–' + sc[1], color:'#ff8fb6', lines,
+    note:S.bar.lvl < 5 ? 'Con una barra più lunga e veloce avresti preso quella pallina.' : '',
+    primary:S.bar.lvl < 5 ? {label:'Potenzia la barra', bg:'#5dffa0', fn:() => { closeModal(); S.barTab = 'up'; A.tab('bars'); }} : {label:'Continua', fn:closeModal},
+    secondary:S.bar.lvl < 5 ? {label:'Continua', fn:closeModal} : null});
+}
+
+// ════════════════ Avvio ════════════════
+function loop(now){ if(!G.on) drawPreviews(now); requestAnimationFrame(loop); }
+render(); requestAnimationFrame(loop);
+if(document.fonts) document.fonts.ready.then(() => { for(const k in texCache) texCache[k].at = -1; });
+</script>
+</body>
+</html>
