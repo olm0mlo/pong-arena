@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#07080c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pong Arena">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icona-192.png">
 <title>Pong Arena · Lobby</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Michroma&display=swap" rel="stylesheet">
@@ -139,9 +146,12 @@ canvas.pv{display:block}
 .confetti{position:fixed;top:-10px;width:8px;height:12px;z-index:30;pointer-events:none;animation:fall 1.8s ease-in forwards}
 @keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.2}}
 /* partita */
+#gPauseBox{position:absolute;inset:0;z-index:3;background:rgba(3,4,8,.86);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px}
+.hint{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--ln2);background:var(--p1);font-size:12px;color:var(--mu2);line-height:1.4}
+
 #game{position:fixed;inset:0;background:#05070b;z-index:15;touch-action:none}
 #gcv{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
-#gExit{position:absolute;top:calc(10px + env(safe-area-inset-top));left:10px;height:34px;padding:0 12px;border-radius:9px;border:1px solid var(--ln3);background:rgba(14,18,27,.85);color:var(--mu2);font-size:13px;font-weight:600;z-index:2}
+#gPause{position:absolute;top:calc(10px + env(safe-area-inset-top));left:10px;display:flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:9px;border:1px solid var(--ln3);background:rgba(14,18,27,.85);color:var(--mu2);font-size:13px;font-weight:600;z-index:2}
 </style>
 </head>
 <body>
@@ -153,11 +163,18 @@ canvas.pv{display:block}
 <div id="modal" class="veil hidden"></div>
 <div id="chest" class="veil hidden"></div>
 <div id="onb" class="hidden"></div>
-<div id="game" class="hidden"><canvas id="gcv"></canvas><button id="gExit">Abbandona</button></div>
+<div id="game" class="hidden"><canvas id="gcv"></canvas>
+  <button id="gPause" aria-label="Pausa"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg>Pausa</button>
+  <div id="gPauseBox" class="hidden"><div class="mi" style="font-size:30px;letter-spacing:.2em;color:var(--cy)">PAUSA</div>
+    <div id="gPauseSc" class="mi" style="font-size:18px;color:var(--mu2)"></div>
+    <button class="bigbtn" id="gResume" style="width:100%;max-width:320px;background:var(--cy);color:#04161a">Riprendi</button>
+    <button class="btn2" id="gQuit" style="width:100%;max-width:320px">Abbandona la partita</button></div>
+</div>
+<div id="sa" style="position:fixed;left:0;top:0;width:0;height:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);visibility:hidden;pointer-events:none"></div>
 <script>
 // ════════════════ PONG ARENA · Lobby (versione di prova, da sola) ════════════════
 // Tutto il gioco è in questo file. I progressi restano salvati nel browser del telefono.
-const BUILD = '28/09 13:30';
+const BUILD = '28/09 15:10';
 const FW = 1.6, FH = 1;
 const PX = .06, PT = .028, PL = .24;   // barra: distanza dal bordo, spessore, lunghezza
 const BR = .018;                       // raggio pallina
@@ -415,7 +432,7 @@ const SPD  = [0, 0, 3, 6, 9, 12];          // % velocità della barra per livell
 const BASE_V = 1.7;                        // velocità massima della barra (campo al secondo)
 const XPN = l => [0, 30, 40, 60, 120, 250, 400, 600, 900][l] || 900 + (l - 8)*300;   // esperienza per salire di livello
 const LVLR = l => ({2:[{t:'gems',n:20}, {t:'coins',n:100}], 3:[{t:'frag',n:15}, {t:'coins',n:100}], 4:[{t:'gems',n:30}], 5:[{t:'coins',n:150}]})[l] || [{t:'coins',n:50}];
-const CPU = [{v:.55, amp:.5, len:PL*.9, lv:1}, {v:.85, amp:.25, len:PL, lv:3}, {v:1.2, amp:.08, len:PL*1.15, lv:6}];
+const CPU = [{v:.75, amp:.3, len:PL, lv:1}, {v:.9, amp:.2, len:PL, lv:3}, {v:1.2, amp:.08, len:PL*1.15, lv:6}];   // CPU: velocità, quanto sbaglia la mira, lunghezza barra
 const WINR = [{coins:60, tro:30, pass:60, xp:40}, {coins:30, tro:25, pass:40, xp:40}, {coins:10, tro:20, pass:25, xp:40}];
 const LOSSR = [{tro:10, pass:30, xp:20}, {tro:15, pass:20, xp:20}, {tro:20, pass:10, xp:20}];
 const CHEST_MS = [{Argento:5e3, Oro:15e3}, {Argento:60e3, Oro:180e3}, {Argento:3*3600e3, Oro:8*3600e3}];
@@ -838,6 +855,14 @@ function offerBanner(id){
     <span style="font-size:15px;font-weight:700">${o.title}</span><span style="font-size:12px;color:#b9c6d8">Termina tra <b class="tab" style="color:#ff8fb6" data-t="o_${id}"></b></span></div>
     <span style="font-size:15px;font-weight:700;color:#ff8fb6">€ ${eu(o.price)}</span></button>`;
 }
+function installHint(){
+  if(S.hintOff || STANDALONE || !matchMedia('(pointer: coarse)').matches) return '';
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  return `<div class="hint"><span style="flex-grow:1"><b style="color:var(--tx)">Giocala come un'app, a schermo intero:</b><br>${ios
+    ? 'in Safari tocca Condividi (il quadrato con la freccia) e poi «Aggiungi alla schermata Home».'
+    : 'apri il menu del browser (⋮) e scegli «Aggiungi a schermata Home» o «Installa app».'}</span>
+    <button class="smbtn" onclick="S.hintOff=1;commit()">Ok</button></div>`;
+}
 function vLobby(reached, passDot){
   const act = Object.keys(OFFERS).filter(offerOn);
   const dots = [[110,190,4,'#3ff0ff',0],[268,195,3,'#ff4d8d',-1.8],[175,200,3,'#3ff0ff',-3.5],[228,188,4,'#fff',-5.2],[145,196,3,'#ff4d8d',-2.6],[300,192,3,'#3ff0ff',-6.1]]
@@ -847,6 +872,7 @@ function vLobby(reached, passDot){
   const ds = dailyState();
   const road = ROAD[S.road], prev = S.road ? ROAD[S.road - 1][0] : 0;
   return `<div class="col">
+    ${installHint()}
     ${act.length ? offerBanner(act[0]) : ''}
     ${missOpen ? `<div class="miss"><div class="hrow"><span style="font-size:13px;font-weight:700;color:var(--gr)">Missioni iniziali</span><span class="small">${nDone}/${MISS.length}</span></div>
       ${MISS.filter(m => !S.mclaim[m.id]).map(m => `<div class="mrow"><div class="mck ${S.mdone[m.id] ? 'ok' : ''}">${S.mdone[m.id] ? I.check : ''}</div>
@@ -1040,6 +1066,8 @@ function startMatch(){
     myY:FH/2, myT:FH/2, cpuY:FH/2, cpuErr:0, len:PL*(1 + LEN[lv]/100), maxV:BASE_V*(1 + SPD[lv]/100),
     power:{have:lv >= 3, armed:false, used:false}, cpu:cp, fx:[], goalT:-1e9, flashT:-1e9, trail:[], acc:0, last:performance.now(), overT:0, win:false, keys:{}});
   pad = {id:null, lx:0, finger:null, touched:false};
+  G.paused = false; $('#gPauseBox').classList.add('hidden');
+  goFull();
   $('#game').classList.remove('hidden'); gResize();
   serve(Math.random() < .5 ? 1 : -1, 3000);
   requestAnimationFrame(gFrame);
@@ -1094,9 +1122,10 @@ function gResize(){
   if(!G.on) return;
   const dpr = devicePixelRatio || 1, w = innerWidth, h = innerHeight;
   gcv.width = w*dpr; gcv.height = h*dpr; gctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const top = 52, gh = h*(1 - CTRL), fs = Math.round(Math.min(w*.1, 40)), lh = Math.min(w*.24, gh*.15);
+  const sa = $('#sa'), sT = parseFloat(getComputedStyle(sa).paddingTop) || 0, sB = parseFloat(getComputedStyle(sa).paddingBottom) || 0;
+  const top = 52 + sT, gh = h*(1 - CTRL) - sB*.5, fs = Math.round(Math.min(w*.1, 40)), lh = Math.min(w*.24, gh*.15);
   G.f3 = new Field3D('L'); G.f3.fit(0, 0, w, gh, top + lh + fs*1.25);
-  V = {w, h, gh, fs, lh, top};
+  V = {w, h, gh, fs, lh, top, sB};
   const bw = Math.min(170, w*.42); V.pw = {x:w - 14 - bw, y:gh + 12 + 10, w:bw - 10, h:40};
 }
 addEventListener('resize', gResize);
@@ -1133,9 +1162,9 @@ function drawGoal(c, now){
 }
 function gFrame(now){
   if(!G.on) return;
-  let dt = Math.min(.1, (now - G.last)/1000); G.last = now; G.acc += dt;
-  while(G.acc >= STEP){ gStep(STEP, now); G.acc -= STEP; }
-  if(G.ph === 'play'){ G.trail.push([G.ball.x, G.ball.y]); if(G.trail.length > 12) G.trail.shift(); }
+  let dt = Math.min(.1, (now - G.last)/1000); G.last = now;
+  if(!G.paused){ G.acc += dt; while(G.acc >= STEP){ gStep(STEP, now); G.acc -= STEP; } }
+  if(G.ph === 'play' && !G.paused){ G.trail.push([G.ball.x, G.ball.y]); if(G.trail.length > 12) G.trail.shift(); }
   gDraw(now);
   if(G.ph === 'over' && now - G.overT > 2600) return endMatch(false);
   requestAnimationFrame(gFrame);
@@ -1144,9 +1173,9 @@ function gDraw(now){
   const c = gctx, W = V.w, H = V.h, gh = V.gh;
   c.fillStyle = '#05070b'; c.fillRect(0, 0, W, H);
   const trail = S.eq.scia === 't_none' || G.ph !== 'play' ? [] : G.trail;
-  G.f3.draw(c, {ball:G.ph === 'over' ? null : G.ball, trail, trailCol:TRAILS[S.eq.scia], myY:G.myY, oppY:G.cpuY, showOpp:true, ph:G.ph, cd:G.phEnd - now,
+  G.f3.draw(c, {ball:G.ph === 'over' ? null : G.ball, trail, trailCol:TRAILS[S.eq.scia], myY:G.myY, oppY:G.cpuY, showOpp:true, ph:G.ph,
     mySkin:skinTexId(S.eq.skin), oppSkin:'base', myLen:G.len, oppLen:G.cpu.len,
-    hint:G.sc[0] + G.sc[1] === 0 ? 'Usa il touchpad qui sotto per muovere la barra' : '',
+    cd:G.paused ? 0 : G.phEnd - now, hint:G.sc[0] + G.sc[1] === 0 ? 'Usa il touchpad qui sotto per muovere la barra' : '',
     msg:G.ph === 'over' ? [G.win ? 'HAI VINTO!' : 'HAI PERSO', G.sc[0] + ' – ' + G.sc[1]] : null}, now);
   drawFx(c, now);
   if(now - G.flashT < 350){ c.fillStyle = `rgba(255,201,77,${.25*(1 - (now - G.flashT)/350)})`; c.fillRect(0, 0, W, gh); }
@@ -1157,7 +1186,7 @@ function gDraw(now){
   c.fillStyle = COL.L; c.fillText(G.sc[0], W/2 - gap, sy); c.fillStyle = '#5b6275'; c.fillText(':', W/2, sy); c.fillStyle = COL.R; c.fillText(G.sc[1], W/2 + gap, sy);
   // touchpad
   c.fillStyle = '#12151d'; c.fillRect(0, gh, W, H - gh); c.fillStyle = '#2a3040'; c.fillRect(0, gh, W, 1);
-  const pm = 14, px = pm, py = gh + 12, pw = W - 2*pm, ph = H - gh - 34;
+  const pm = 14, px = pm, py = gh + 12, pw = W - 2*pm, ph = H - gh - 34 - V.sB;
   c.strokeStyle = '#2f3649'; c.lineWidth = 1.5; c.setLineDash([4, 5]); rr(c, px, py, pw, ph, 14); c.stroke(); c.setLineDash([]);
   c.fillStyle = COL.L + '0a'; rr(c, px, py, pw, ph, 14); c.fill();
   const u01 = (G.myY - G.len/2)/(FH - G.len), gx = px + 12 + (pw - 24)*u01;
@@ -1173,12 +1202,12 @@ function gDraw(now){
   c.fillText(label, b.x + b.w/2, b.y + b.h/2 + 1);
   c.font = `500 ${Math.round(Math.min(W*.034, 13))}px system-ui,sans-serif`;
   c.fillStyle = pad.touched ? '#6e7589' : `rgba(230,233,240,${.55 + .35*Math.sin(now/400)})`;
-  c.fillText(pad.touched ? 'appoggia il dito e trascina' : 'Appoggia qui il dito e trascina', W/2, H - 12);
+  c.fillText(pad.touched ? 'appoggia il dito e trascina' : 'Appoggia qui il dito e trascina', W/2, H - 12 - V.sB);
 }
 const inPw = (x, y) => V && x >= V.pw.x && x <= V.pw.x + V.pw.w && y >= V.pw.y && y <= V.pw.y + V.pw.h;
 function armPower(){ const P = G.power; if(P.have && !P.used && !P.armed){ P.armed = true; buzz(20); } }
 gcv.addEventListener('pointerdown', e => {
-  if(!G.on || !V) return; const r = gcv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  if(!G.on || !V || G.paused) return; const r = gcv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
   if(y < V.gh) return;
   e.preventDefault();
   if(inPw(x, y)) return armPower();
@@ -1190,12 +1219,32 @@ gcv.addEventListener('pointermove', e => {
 });
 const padUp = e => { if(pad.id === e.pointerId){ pad.id = null; pad.finger = null; } };
 gcv.addEventListener('pointerup', padUp); gcv.addEventListener('pointercancel', padUp);
-addEventListener('keydown', e => { if(!G.on) return; G.keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = true; if(e.key === ' '){ e.preventDefault(); armPower(); } });
+addEventListener('keydown', e => { if(!G.on) return; if(e.key === 'Escape' || e.key === 'p'){ G.paused ? resume() : pause(); return; } G.keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = true; if(e.key === ' '){ e.preventDefault(); armPower(); } });
 addEventListener('keyup', e => { if(G.on) G.keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = false; });
-$('#gExit').onclick = () => {
-  if(G.ph === 'over') return endMatch(false);
-  openModal({title:'Abbandonare?', lines:['Abbandonare la partita conta come sconfitta.'], primary:{label:'Abbandona', bg:'#ff4d8d', fn:() => { closeModal(); endMatch(true); }}, secondary:{label:'Continua a giocare', fn:closeModal}});
-};
+function pause(){
+  if(!G.on || G.paused || G.ph === 'over') return;
+  G.paused = true; G.pauseT = performance.now(); pad = {id:null, lx:0, finger:null, touched:pad.touched};
+  $('#gPauseSc').textContent = G.sc[0] + ' – ' + G.sc[1];
+  $('#gPauseBox').classList.remove('hidden');
+}
+function resume(){
+  if(!G.paused) return;
+  const now = performance.now();
+  if(G.ph === 'cd') G.phEnd += now - G.pauseT;
+  else if(G.ph === 'play'){ G.pend = {vx:G.ball.vx, vy:G.ball.vy}; G.ball.vx = G.ball.vy = 0; G.ph = 'cd'; G.phEnd = now + 1500; }   // riparte dopo un breve conto alla rovescia
+  G.paused = false; G.last = now; $('#gPauseBox').classList.add('hidden');
+}
+$('#gPause').onclick = pause;
+$('#gResume').onclick = resume;
+$('#gQuit').onclick = () => openModal({title:'Abbandonare?', lines:['Abbandonare la partita conta come sconfitta.'], primary:{label:'Abbandona', bg:'#ff4d8d', fn:() => { closeModal(); endMatch(true); }}, secondary:{label:'Continua a giocare', fn:closeModal}});
+document.addEventListener('visibilitychange', () => { if(document.hidden) pause(); });   // se esci dall'app o arriva una chiamata, la partita si ferma
+// schermo intero: dove il browser lo permette (Android). Su iPhone serve "Aggiungi alla schermata Home".
+const STANDALONE = matchMedia('(display-mode: fullscreen)').matches || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+function goFull(){
+  if(STANDALONE || document.fullscreenElement) return;
+  const el = document.documentElement, rq = el.requestFullscreen || el.webkitRequestFullscreen;
+  if(rq && matchMedia('(pointer: coarse)').matches){ try{ const p = rq.call(el, {navigationUI:'hide'}); if(p && p.catch) p.catch(() => {}); }catch(e){} }
+}
 function endMatch(quit){
   if(!G.on) return;
   G.on = false; $('#game').classList.add('hidden');
