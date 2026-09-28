@@ -174,7 +174,7 @@ canvas.pv{display:block}
 <script>
 // ════════════════ PONG ARENA · Lobby (versione di prova, da sola) ════════════════
 // Tutto il gioco è in questo file. I progressi restano salvati nel browser del telefono.
-const BUILD = '28/09 15:10';
+const BUILD = '28/09 15:30';
 const FW = 1.6, FH = 1;
 const PX = .06, PT = .028, PL = .24;   // barra: distanza dal bordo, spessore, lunghezza
 const BR = .018;                       // raggio pallina
@@ -1075,6 +1075,7 @@ function startMatch(){
 function serve(dir, delay){
   const a = (Math.random() - .5)*.8;
   G.ball = {x:FW/2, y:FH/2, vx:0, vy:0}; G.trail = [];
+  G.cpuErr = (Math.random() - .5)*2*G.cpu.amp*.25;   // a ogni battuta la CPU mira di nuovo, con un errore piccolo
   G.pend = {vx:Math.cos(a)*SPEED0*dir, vy:Math.sin(a)*SPEED0};
   G.ph = 'cd'; G.phEnd = performance.now() + delay;
 }
