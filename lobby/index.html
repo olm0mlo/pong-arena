@@ -94,10 +94,11 @@ canvas.pv{display:block}
 /* profilo */
 .stbox{border-radius:12px;border:1px solid var(--ln);background:var(--p3);padding:10px 12px;display:flex;flex-direction:column;gap:2px}
 /* navigazione */
-.nav{flex-shrink:0;height:calc(72px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid var(--ln);background:var(--p2)}
+.nav{flex-shrink:0;height:calc(72px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border-top:1px solid var(--ln);background:var(--p2)}
 .nav button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:700;color:var(--mu)}
 .nav button.on{background:#121a28;color:var(--cy);box-shadow:inset 0 3px 0 var(--cy)}
-.nav .nd{position:absolute;top:10px;right:calc(50% - 20px);width:9px;height:9px;border-radius:5px}
+.nav button{font-size:10px}
+.nav .nd{position:absolute;top:10px;right:calc(50% - 18px);width:9px;height:9px;border-radius:5px}
 /* finestre */
 .veil{position:fixed;inset:0;max-width:480px;margin:0 auto;background:rgba(3,4,8,.84);display:flex;align-items:center;justify-content:center;padding:24px;z-index:20}
 .modal{width:100%;border-radius:16px;border:1px solid var(--ln3);background:#0d111a;padding:20px;display:flex;flex-direction:column;gap:12px;text-align:center}
@@ -145,6 +146,32 @@ canvas.pv{display:block}
 .chart rect.hit{fill:transparent;cursor:pointer}
 .confetti{position:fixed;top:-10px;width:8px;height:12px;z-index:30;pointer-events:none;animation:fall 1.8s ease-in forwards}
 @keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.2}}
+/* album */
+.chibi{flex-shrink:0}.chibi svg{width:100%;height:100%;display:block}
+.ptabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.ptabs button{height:46px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:13px;font-weight:700;border:1px solid var(--ln2);background:var(--p1);color:#a9b8cc}
+.fig{position:relative;height:146px;border-radius:12px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;justify-content:space-between}
+.fig .rr{font-size:9px;font-weight:700;letter-spacing:.08em}
+.fig .nm{font-size:11px;font-weight:700;text-align:center;line-height:1.15;min-height:26px;display:flex;align-items:center}
+.fig .x{position:absolute;top:5px;right:5px;min-width:22px;height:18px;padding:0 4px;border-radius:9px;background:#e7b8ff;color:#1a0f24;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Michroma,sans-serif;font-size:26px;color:#8d9bb0}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 rgba(255,77,141,0)}50%{box-shadow:0 0 18px rgba(255,77,141,.6)}}
+.bob{animation:bob 2.2s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-5px) rotate(3deg)}}
+.cheer{animation:cheer 1.2s ease-out both;transform-origin:50% 100%}
+@keyframes cheer{20%{transform:translateY(-26px) scale(1.1) rotate(-8deg)}40%{transform:translateY(0) scale(.95)}60%{transform:translateY(-18px) rotate(8deg)}80%,100%{transform:translateY(0)}}
+.sad{animation:sad 1.2s ease-in-out both;transform-origin:50% 100%}
+@keyframes sad{30%{transform:translateY(6px) rotate(-6deg) scale(.95)}60%{transform:translateY(6px) rotate(6deg) scale(.95)}100%{transform:translateY(4px) scale(.96)}}
+.bubble{animation:bubble 1.6s ease-out both}
+@keyframes bubble{0%{transform:scale(.4);opacity:0}25%{transform:scale(1.05);opacity:1}85%{opacity:1}100%{opacity:0}}
+.pk{height:196px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 4px}
+.pkback{border:2px solid #3ff0ff;background:repeating-linear-gradient(45deg,#0f1c2a 0 10px,#0c1622 10px 20px);justify-content:center;gap:6px;color:#3ff0ff;width:100%}
+.flip{animation:flip .5s ease-out both}
+@keyframes flip{0%{transform:scale(.3) rotateY(90deg);opacity:0}60%{transform:scale(1.1) rotateY(0);opacity:1}100%{transform:scale(1)}}
+#sheet{z-index:21;background:rgba(3,4,8,.95)}
+#modal{z-index:30}
+#sheet .inner{width:100%;max-height:100%;overflow-y:auto}
 /* partita */
 #gPauseBox{position:absolute;inset:0;z-index:3;background:rgba(3,4,8,.86);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px}
 .hint{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--ln2);background:var(--p1);font-size:12px;color:var(--mu2);line-height:1.4}
@@ -161,6 +188,7 @@ canvas.pv{display:block}
   <div class="nav" id="nav"></div>
 </div>
 <div id="modal" class="veil hidden"></div>
+<div id="sheet" class="veil hidden"></div>
 <div id="chest" class="veil hidden"></div>
 <div id="onb" class="hidden"></div>
 <div id="game" class="hidden"><canvas id="gcv"></canvas>
@@ -174,7 +202,7 @@ canvas.pv{display:block}
 <script>
 // ════════════════ PONG ARENA · Lobby (versione di prova, da sola) ════════════════
 // Tutto il gioco è in questo file. I progressi restano salvati nel browser del telefono.
-const BUILD = '28/09 15:30';
+const BUILD = '28/09 16:30';
 const FW = 1.6, FH = 1;
 const PX = .06, PT = .028, PL = .24;   // barra: distanza dal bordo, spessore, lunghezza
 const BR = .018;                       // raggio pallina
@@ -191,6 +219,33 @@ function drawSkinAt(c, id, cx, cy, w, now, col){
   c.restore();
 }
 
+// disegni dei 24 personaggi dell'album (SVG)
+const CHIBI = {
+"polpetta": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Polpetta Rimbalzina\"><ellipse cx=\"50\" cy=\"93\" rx=\"24\" ry=\"4\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M14 82h8M12 74h6M78 82h8M82 74h6\" stroke=\"#ffc94d\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><circle cx=\"50\" cy=\"58\" r=\"30\" fill=\"#9a5a34\" stroke=\"#1a1024\" stroke-width=\"3\"></circle><circle cx=\"36\" cy=\"46\" r=\"3\" fill=\"#7a4526\"></circle><circle cx=\"65\" cy=\"72\" r=\"3.5\" fill=\"#7a4526\"></circle><circle cx=\"33\" cy=\"72\" r=\"2.5\" fill=\"#7a4526\"></circle><circle cx=\"68\" cy=\"52\" r=\"2.5\" fill=\"#7a4526\"></circle><path d=\"M22 50c4-18 52-18 56 0-3 4-6 1-8 5-2 5-6 0-9 4-3 4-6-1-9 2-3 3-6-2-9 1-4 3-6-2-9-1-4 2-8-4-12-11z\" fill=\"#e0342b\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M50 30c4-7 13-7 15-3-4 5-11 6-15 3z\" fill=\"#3fbf5a\" stroke=\"#1a1024\" stroke-width=\"2\"></path><ellipse cx=\"41\" cy=\"62\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"42.2\" cy=\"60.4\" r=\"1.3\" fill=\"#fff\"></circle><ellipse cx=\"59\" cy=\"62\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"60.2\" cy=\"60.4\" r=\"1.3\" fill=\"#fff\"></circle><ellipse cx=\"33\" cy=\"69\" rx=\"4.5\" ry=\"2.4\" fill=\"#ff6f9f\" opacity=\".55\"></ellipse><ellipse cx=\"67\" cy=\"69\" rx=\"4.5\" ry=\"2.4\" fill=\"#ff6f9f\" opacity=\".55\"></ellipse><path d=\"M45 70q5 5 10 0\" fill=\"none\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path></svg>",
+"gnocco": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Gnocco Pigro\"><ellipse cx=\"50\" cy=\"92\" rx=\"28\" ry=\"4\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M20 62c0-20 13-28 30-28s30 8 30 28-13 26-30 26-30-6-30-26z\" fill=\"#f5dc8a\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M32 42v42M43 37v50M57 37v50M68 42v42\" stroke=\"#d9b95b\" stroke-width=\"3\" stroke-linecap=\"round\"></path><path d=\"M36 62q4.5 3.5 9 0M55 62q4.5 3.5 9 0\" fill=\"none\" stroke=\"#1a1024\" stroke-width=\"2.8\" stroke-linecap=\"round\"></path><ellipse cx=\"32\" cy=\"69\" rx=\"4.5\" ry=\"2.4\" fill=\"#ff6f9f\" opacity=\".55\"></ellipse><ellipse cx=\"68\" cy=\"69\" rx=\"4.5\" ry=\"2.4\" fill=\"#ff6f9f\" opacity=\".55\"></ellipse><ellipse cx=\"50\" cy=\"72\" rx=\"2.6\" ry=\"3.2\" fill=\"#1a1024\"></ellipse><text x=\"72\" y=\"30\" font-family=\"Arial, sans-serif\" font-weight=\"700\" font-size=\"15\" fill=\"#8fb8ff\">z</text><text x=\"82\" y=\"18\" font-family=\"Arial, sans-serif\" font-weight=\"700\" font-size=\"10\" fill=\"#8fb8ff\">z</text></svg>",
+"cornetto": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Cornetto Mattiniero\"><ellipse cx=\"50\" cy=\"90\" rx=\"30\" ry=\"4\" fill=\"#000\" opacity=\".25\"></ellipse><circle cx=\"84\" cy=\"18\" r=\"7\" fill=\"#ffd84d\"></circle><path d=\"M84 6v-3M84 33v-3M72 18h-3M99 18h-3\" stroke=\"#ffd84d\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M12 70c4-24 20-36 38-36s34 12 38 36c-6 4-12 2-16-2-4 9-13 14-22 14s-18-5-22-14c-4 4-10 6-16 2z\" fill=\"#f0a23c\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M33 42c2 11 2 23-2 33M50 36v44M67 42c-2 11-2 23 2 33\" fill=\"none\" stroke=\"#c7771c\" stroke-width=\"3\" stroke-linecap=\"round\"></path><path d=\"M40 40q10-4 20 0\" stroke=\"#ffd98a\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"></path><ellipse cx=\"42\" cy=\"58\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"43.2\" cy=\"56.4\" r=\"1.3\" fill=\"#fff\"></circle><ellipse cx=\"58\" cy=\"58\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"59.2\" cy=\"56.4\" r=\"1.3\" fill=\"#fff\"></circle><ellipse cx=\"35\" cy=\"65\" rx=\"4.5\" ry=\"2.4\" fill=\"#ff6f9f\" opacity=\".55\"></ellipse><ellipse cx=\"65\" cy=\"65\" rx=\"4.5\" ry=\"2.4\" fill=\"#ff6f9f\" opacity=\".55\"></ellipse><path d=\"M46 65q4 4 8 0\" fill=\"none\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path></svg>",
+"sushi": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Sushi Ninja\"><ellipse cx=\"50\" cy=\"91\" rx=\"30\" ry=\"4\" fill=\"#000\" opacity=\".25\"></ellipse><rect x=\"20\" y=\"50\" width=\"60\" height=\"36\" rx=\"15\" fill=\"#fbfbf5\" stroke=\"#1a1024\" stroke-width=\"3\"></rect><circle cx=\"31\" cy=\"79\" r=\"1.8\" fill=\"#dcdccf\"></circle><circle cx=\"69\" cy=\"77\" r=\"1.8\" fill=\"#dcdccf\"></circle><circle cx=\"50\" cy=\"81\" r=\"1.8\" fill=\"#dcdccf\"></circle><path d=\"M16 50c2-13 15-19 34-19s32 6 34 19c-11 4-57 4-68 0z\" fill=\"#ff8a5c\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M32 36l6 11M47 33l3 13M62 34l2 13\" stroke=\"#ffd2bd\" stroke-width=\"3\" stroke-linecap=\"round\"></path><path d=\"M80 57l14-7M80 62l14 5\" stroke=\"#1d2b22\" stroke-width=\"5\" stroke-linecap=\"round\"></path><rect x=\"18\" y=\"53\" width=\"64\" height=\"14\" fill=\"#1d2b22\" stroke=\"#1a1024\" stroke-width=\"3\"></rect><path d=\"M34 57.5l9 1.5v2.5h-9z\" fill=\"#fff\"></path><path d=\"M66 57.5l-9 1.5v2.5h9z\" fill=\"#fff\"></path><circle cx=\"40\" cy=\"60\" r=\"1.7\" fill=\"#1a1024\"></circle><circle cx=\"60\" cy=\"60\" r=\"1.7\" fill=\"#1a1024\"></circle><path d=\"M45 76h10\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path></svg>",
+"gelato": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Gelato Squagliato\"><ellipse cx=\"50\" cy=\"94\" rx=\"16\" ry=\"3\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M33 54l17 38 17-38z\" fill=\"#e3a458\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M39 60l14 18M46 56l13 14M61 58l-15 20M53 56l-10 12\" stroke=\"#b97a33\" stroke-width=\"2\"></path><path d=\"M24 54c-4-19 9-31 26-31s30 12 26 31c-3 2-5-2-8 1-2 5-5 6-7 0-3-3-5 2-9 2s-6-6-9-2c-3 3-5-3-8 0-2 1-5 2-7-1z\" fill=\"#ff9ccf\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M66 56c1 7 1 11-2 11s-3-4-2-9\" fill=\"#ff9ccf\" stroke=\"#1a1024\" stroke-width=\"2.5\"></path><path d=\"M50 17q2-8 9-10\" stroke=\"#1a1024\" stroke-width=\"2.5\" fill=\"none\"></path><circle cx=\"50\" cy=\"21\" r=\"5.5\" fill=\"#e0342b\" stroke=\"#1a1024\" stroke-width=\"3\"></circle><ellipse cx=\"42\" cy=\"41\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"43.2\" cy=\"39.4\" r=\"1.3\" fill=\"#fff\"></circle><ellipse cx=\"58\" cy=\"41\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"59.2\" cy=\"39.4\" r=\"1.3\" fill=\"#fff\"></circle><ellipse cx=\"35\" cy=\"48\" rx=\"4.5\" ry=\"2.4\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse><ellipse cx=\"65\" cy=\"48\" rx=\"4.5\" ry=\"2.4\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse><path d=\"M45 47q5 5 10 0\" fill=\"#fff\" stroke=\"#1a1024\" stroke-width=\"2.5\"></path><path d=\"M49 50q1 6 5 2\" fill=\"#ff5a7a\" stroke=\"#1a1024\" stroke-width=\"2\"></path><path d=\"M18 36q-3 5 0 7q3-2 0-7z\" fill=\"#8fd8ff\"></path></svg>",
+"margherita": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Re Margherita\"><ellipse cx=\"50\" cy=\"95\" rx=\"14\" ry=\"3\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M86 52l2 5 5 2-5 2-2 5-2-5-5-2 5-2z\" fill=\"#fff6b0\"></path><path d=\"M13 66l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z\" fill=\"#fff6b0\"></path><path d=\"M16 36h68L50 93z\" fill=\"#ffd45c\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M13 31q37-11 74 0l-2 9q-35-9-70 0z\" fill=\"#d9893b\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><circle cx=\"34\" cy=\"50\" r=\"5\" fill=\"#e0342b\"></circle><circle cx=\"66\" cy=\"48\" r=\"5\" fill=\"#e0342b\"></circle><circle cx=\"52\" cy=\"78\" r=\"4\" fill=\"#e0342b\"></circle><path d=\"M60 64c3-5 9-5 10-1-3 3-7 4-10 1z\" fill=\"#3fbf5a\"></path><path d=\"M33 27l4-17 8 9 5-13 5 13 8-9 4 17z\" fill=\"#ffc94d\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><circle cx=\"50\" cy=\"7\" r=\"2.6\" fill=\"#ff4d8d\"></circle><ellipse cx=\"42\" cy=\"58\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"43.2\" cy=\"56.4\" r=\"1.3\" fill=\"#fff\"></circle><ellipse cx=\"58\" cy=\"58\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"59.2\" cy=\"56.4\" r=\"1.3\" fill=\"#fff\"></circle><ellipse cx=\"37\" cy=\"65\" rx=\"4\" ry=\"2.2\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse><ellipse cx=\"63\" cy=\"65\" rx=\"4\" ry=\"2.2\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse><path d=\"M45 66q5 5 10 0\" fill=\"none\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path></svg>",
+"fantasmino": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Fantasmino Timido\"><ellipse cx=\"50\" cy=\"94\" rx=\"18\" ry=\"3\" fill=\"#000\" opacity=\".2\"></ellipse><path d=\"M26 64q-7 2-7 9M74 64q7 2 7 9\" stroke=\"#1a1024\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"></path><path d=\"M26 86V50c0-16 10-26 24-26s24 10 24 26v36l-6-6-6 6-6-6-6 6-6-6-6 6-6-6z\" fill=\"#f4f7ff\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><ellipse cx=\"44\" cy=\"52\" rx=\"3.3\" ry=\"4.4\" fill=\"#1a1024\"></ellipse><circle cx=\"45.1\" cy=\"50.5\" r=\"1.2\" fill=\"#fff\"></circle><ellipse cx=\"57\" cy=\"52\" rx=\"3.3\" ry=\"4.4\" fill=\"#1a1024\"></ellipse><circle cx=\"58.1\" cy=\"50.5\" r=\"1.2\" fill=\"#fff\"></circle><ellipse cx=\"37\" cy=\"60\" rx=\"5\" ry=\"2.6\" fill=\"#ff6f9f\" opacity=\".7\"></ellipse><ellipse cx=\"64\" cy=\"60\" rx=\"5\" ry=\"2.6\" fill=\"#ff6f9f\" opacity=\".7\"></ellipse><path d=\"M46 62q2-2 4 0t4 0\" fill=\"none\" stroke=\"#1a1024\" stroke-width=\"2.2\" stroke-linecap=\"round\"></path></svg>",
+"zombi": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Zombi Ballerino\"><ellipse cx=\"50\" cy=\"93\" rx=\"24\" ry=\"4\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M30 64L14 42M70 64l16-22\" stroke=\"#1a1024\" stroke-width=\"11\" stroke-linecap=\"round\"></path><path d=\"M30 64L14 42M70 64l16-22\" stroke=\"#8fd46a\" stroke-width=\"6\" stroke-linecap=\"round\"></path><path d=\"M36 80v10M64 80v10\" stroke=\"#1a1024\" stroke-width=\"5\" stroke-linecap=\"round\"></path><rect x=\"26\" y=\"32\" width=\"48\" height=\"50\" rx=\"17\" fill=\"#8fd46a\" stroke=\"#1a1024\" stroke-width=\"3\"></rect><path d=\"M40 32l4-9 4 9 4-9 4 9\" fill=\"none\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M34 38v10M30 42h8\" stroke=\"#1a1024\" stroke-width=\"2\"></path><circle cx=\"42\" cy=\"54\" r=\"6.5\" fill=\"#fff\" stroke=\"#1a1024\" stroke-width=\"2.5\"></circle><circle cx=\"43\" cy=\"55\" r=\"2.6\" fill=\"#1a1024\"></circle><ellipse cx=\"60\" cy=\"54\" rx=\"3.4\" ry=\"4.4\" fill=\"#1a1024\"></ellipse><circle cx=\"61.1\" cy=\"52.5\" r=\"1.2\" fill=\"#fff\"></circle><path d=\"M41 69h18\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linecap=\"round\"></path><path d=\"M46 66v6M54 66v6\" stroke=\"#1a1024\" stroke-width=\"2\"></path><path d=\"M86 18v11a3 3 0 1 1-2-3V16l7-2v3z\" fill=\"#ffc94d\"></path></svg>",
+"occhio": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Occhio Volante\"><ellipse cx=\"50\" cy=\"95\" rx=\"14\" ry=\"3\" fill=\"#000\" opacity=\".2\"></ellipse><path d=\"M30 50c-10-11-23-9-26 2 6-2 11 2 11 6 4-3 10-2 13 2z\" fill=\"#7a4bd6\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M70 50c10-11 23-9 26 2-6-2-11 2-11 6-4-3-10-2-13 2z\" fill=\"#7a4bd6\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><circle cx=\"50\" cy=\"54\" r=\"25\" fill=\"#fff\" stroke=\"#1a1024\" stroke-width=\"3\"></circle><path d=\"M29 44q6 2 8 6M71 66q-6-1-8-6M34 70q4-3 8-2\" stroke=\"#ff6f6f\" stroke-width=\"1.6\" fill=\"none\"></path><circle cx=\"52\" cy=\"54\" r=\"11.5\" fill=\"#3ff0ff\" stroke=\"#1a1024\" stroke-width=\"2.5\"></circle><circle cx=\"52\" cy=\"54\" r=\"5.2\" fill=\"#1a1024\"></circle><circle cx=\"55\" cy=\"50\" r=\"2.5\" fill=\"#fff\"></circle></svg>",
+"vampiro": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Vampiro Dentista\"><ellipse cx=\"50\" cy=\"94\" rx=\"30\" ry=\"3.5\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M16 92l10-36h48l10 36z\" fill=\"#b3122e\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M27 58l-10-16 22 11M73 58l10-16-22 11\" fill=\"#b3122e\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><ellipse cx=\"50\" cy=\"52\" rx=\"22\" ry=\"24\" fill=\"#e9e4f5\" stroke=\"#1a1024\" stroke-width=\"3\"></ellipse><path d=\"M28 46c0-17 10-24 22-24s22 7 22 24c-6-6-12-6-16-2l-6 9-6-9c-4-4-10-4-16 2z\" fill=\"#1d1630\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><circle cx=\"64\" cy=\"31\" r=\"6.5\" fill=\"#cfe9ff\" stroke=\"#1a1024\" stroke-width=\"2.5\"></circle><circle cx=\"62\" cy=\"29\" r=\"1.8\" fill=\"#fff\"></circle><ellipse cx=\"42\" cy=\"55\" rx=\"3.4\" ry=\"4.4\" fill=\"#1a1024\"></ellipse><circle cx=\"43.1\" cy=\"53.5\" r=\"1.2\" fill=\"#fff\"></circle><ellipse cx=\"58\" cy=\"55\" rx=\"3.4\" ry=\"4.4\" fill=\"#1a1024\"></ellipse><circle cx=\"59.1\" cy=\"53.5\" r=\"1.2\" fill=\"#fff\"></circle><path d=\"M41 65q9 7 18 0z\" fill=\"#5a0f1e\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linejoin=\"round\"></path><path d=\"M44.5 65.3l1.7 4.5 1.7-4.4zM52.1 65.4l1.7 4.4 1.7-4.5z\" fill=\"#fff\"></path></svg>",
+"blob": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Blob Gelatina\"><ellipse cx=\"50\" cy=\"90\" rx=\"34\" ry=\"4\" fill=\"#000\" opacity=\".25\"></ellipse><ellipse cx=\"84\" cy=\"88\" rx=\"6\" ry=\"2.2\" fill=\"#6fffb0\" opacity=\".7\"></ellipse><path d=\"M17 86c-4-26 6-54 33-54s37 28 33 54c-10 4-56 4-66 0z\" fill=\"#6fffb0\" fill-opacity=\".85\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M31 46q6-7 15-7\" stroke=\"#fff\" stroke-width=\"4\" fill=\"none\" stroke-linecap=\"round\" opacity=\".85\"></path><circle cx=\"67\" cy=\"70\" r=\"4\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" opacity=\".7\"></circle><circle cx=\"29\" cy=\"76\" r=\"2.5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" opacity=\".7\"></circle><circle cx=\"58\" cy=\"78\" r=\"5\" fill=\"#ffc94d\" opacity=\".8\"></circle><ellipse cx=\"42\" cy=\"59\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"43.2\" cy=\"57.4\" r=\"1.3\" fill=\"#fff\"></circle><ellipse cx=\"58\" cy=\"59\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"59.2\" cy=\"57.4\" r=\"1.3\" fill=\"#fff\"></circle><path d=\"M44 68q6 6 12 0\" fill=\"none\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path></svg>",
+"drago": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Drago Sbadiglio\"><ellipse cx=\"50\" cy=\"94\" rx=\"28\" ry=\"3.5\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M88 30l2 5 5 2-5 2-2 5-2-5-5-2 5-2z\" fill=\"#fff6b0\"></path><path d=\"M11 70l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z\" fill=\"#fff6b0\"></path><path d=\"M30 36l-7-18 15 11zM70 36l7-18-15 11z\" fill=\"#ffd45c\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M20 60c0-22 14-31 30-31s30 9 30 31c0 17-12 29-30 29S20 77 20 60z\" fill=\"#2fc48c\" stroke=\"#1a1024\" stroke-width=\"3\"></path><path d=\"M38 29l4-8 4 8 4-8 4 8 4-8 4 8\" fill=\"#ffd45c\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linejoin=\"round\"></path><ellipse cx=\"50\" cy=\"72\" rx=\"19\" ry=\"14\" fill=\"#a6f2c8\" stroke=\"#1a1024\" stroke-width=\"3\"></ellipse><ellipse cx=\"50\" cy=\"75\" rx=\"9\" ry=\"8.5\" fill=\"#5a0f1e\" stroke=\"#1a1024\" stroke-width=\"2.5\"></ellipse><path d=\"M44.5 80q5.5-5 11 0\" fill=\"#ff6f8f\"></path><circle cx=\"44\" cy=\"64\" r=\"1.6\" fill=\"#1a1024\"></circle><circle cx=\"56\" cy=\"64\" r=\"1.6\" fill=\"#1a1024\"></circle><path d=\"M31 50q5 4 10 0M59 50q5 4 10 0\" stroke=\"#1a1024\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"></path><path d=\"M71 55q-2.5 4 0 6.5 2.5-2.5 0-6.5z\" fill=\"#8fd8ff\"></path><path d=\"M76 70q8-4 6-12q8 0 8-8\" fill=\"none\" stroke=\"#c9d3e0\" stroke-width=\"3\" stroke-linecap=\"round\" opacity=\".8\"></path></svg>",
+"piccione": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Piccione di Città\"><ellipse cx=\"50\" cy=\"93\" rx=\"24\" ry=\"3.5\" fill=\"#000\" opacity=\".25\"></ellipse><circle cx=\"82\" cy=\"90\" r=\"2.6\" fill=\"#e0a458\"></circle><circle cx=\"88\" cy=\"88\" r=\"1.8\" fill=\"#e0a458\"></circle><path d=\"M42 86v6M58 86v6M39 92h6M55 92h6\" stroke=\"#ff8a5c\" stroke-width=\"3\" stroke-linecap=\"round\"></path><ellipse cx=\"50\" cy=\"62\" rx=\"27\" ry=\"25\" fill=\"#9aa3b5\" stroke=\"#1a1024\" stroke-width=\"3\"></ellipse><path d=\"M29 56q21 12 42 0\" stroke=\"#3fbf8a\" stroke-width=\"7\" fill=\"none\"></path><path d=\"M31 60q19 10 38 0\" stroke=\"#a36bff\" stroke-width=\"4\" fill=\"none\"></path><path d=\"M66 64q15 4 10 19-11 0-15-11z\" fill=\"#7d8698\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linejoin=\"round\"></path><circle cx=\"41\" cy=\"45\" r=\"5.5\" fill=\"#ff8a3d\" stroke=\"#1a1024\" stroke-width=\"2\"></circle><circle cx=\"41.5\" cy=\"45\" r=\"2.2\" fill=\"#1a1024\"></circle><circle cx=\"59\" cy=\"45\" r=\"5.5\" fill=\"#ff8a3d\" stroke=\"#1a1024\" stroke-width=\"2\"></circle><circle cx=\"59.5\" cy=\"45\" r=\"2.2\" fill=\"#1a1024\"></circle><path d=\"M46 50l4 7 4-7z\" fill=\"#ffc94d\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linejoin=\"round\"></path></svg>",
+"rana": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Rana Salterina\"><ellipse cx=\"50\" cy=\"92\" rx=\"30\" ry=\"4\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M14 90h10M76 90h10\" stroke=\"#ffc94d\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><ellipse cx=\"50\" cy=\"66\" rx=\"31\" ry=\"22\" fill=\"#5dd65a\" stroke=\"#1a1024\" stroke-width=\"3\"></ellipse><circle cx=\"35\" cy=\"44\" r=\"11\" fill=\"#5dd65a\" stroke=\"#1a1024\" stroke-width=\"3\"></circle><circle cx=\"65\" cy=\"44\" r=\"11\" fill=\"#5dd65a\" stroke=\"#1a1024\" stroke-width=\"3\"></circle><path d=\"M26 52h48\" stroke=\"#5dd65a\" stroke-width=\"6\"></path><circle cx=\"35\" cy=\"44\" r=\"6\" fill=\"#fff\"></circle><circle cx=\"36\" cy=\"45\" r=\"3.2\" fill=\"#1a1024\"></circle><circle cx=\"65\" cy=\"44\" r=\"6\" fill=\"#fff\"></circle><circle cx=\"66\" cy=\"45\" r=\"3.2\" fill=\"#1a1024\"></circle><ellipse cx=\"29\" cy=\"64\" rx=\"4.5\" ry=\"2.4\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse><ellipse cx=\"71\" cy=\"64\" rx=\"4.5\" ry=\"2.4\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse><path d=\"M33 64q17 13 34 0\" fill=\"none\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linecap=\"round\"></path><circle cx=\"40\" cy=\"79\" r=\"2.5\" fill=\"#3aa83a\"></circle><circle cx=\"62\" cy=\"80\" r=\"3\" fill=\"#3aa83a\"></circle></svg>",
+"riccio": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Riccio Punk\"><ellipse cx=\"50\" cy=\"92\" rx=\"30\" ry=\"4\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M18 70l-7-15 13 2-5-15 14 6 2-15 12 10 6-13 6 13 12-10 2 15 14-6-5 15 13-2-7 15z\" fill=\"#8a5a3c\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M40 31l4-15 6 11 6-13 4 17z\" fill=\"#ff4d8d\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><ellipse cx=\"50\" cy=\"66\" rx=\"25\" ry=\"21\" fill=\"#f2cf9e\" stroke=\"#1a1024\" stroke-width=\"3\"></ellipse><path d=\"M28 58h44\" stroke=\"#1a1024\" stroke-width=\"3\"></path><rect x=\"31\" y=\"56\" width=\"15\" height=\"10\" rx=\"3.5\" fill=\"#1a1024\"></rect><rect x=\"54\" y=\"56\" width=\"15\" height=\"10\" rx=\"3.5\" fill=\"#1a1024\"></rect><path d=\"M34 59.5l4-2M57 59.5l4-2\" stroke=\"#3ff0ff\" stroke-width=\"1.8\" stroke-linecap=\"round\"></path><circle cx=\"50\" cy=\"71\" r=\"3.2\" fill=\"#1a1024\"></circle><path d=\"M43 77q7 3 14-1\" fill=\"none\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path></svg>",
+"capibara": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Capibara Zen\"><path d=\"M10 92q40-7 80 0\" stroke=\"#8fd8ff\" stroke-width=\"2.5\" fill=\"none\" opacity=\".7\"></path><circle cx=\"29\" cy=\"40\" r=\"5.5\" fill=\"#8a5a33\" stroke=\"#1a1024\" stroke-width=\"2.5\"></circle><circle cx=\"71\" cy=\"40\" r=\"5.5\" fill=\"#8a5a33\" stroke=\"#1a1024\" stroke-width=\"2.5\"></circle><rect x=\"19\" y=\"37\" width=\"62\" height=\"51\" rx=\"25\" fill=\"#b07a4a\" stroke=\"#1a1024\" stroke-width=\"3\"></rect><path d=\"M50 20q3-6 9-5\" stroke=\"#3fbf5a\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"></path><circle cx=\"50\" cy=\"29\" r=\"9\" fill=\"#ffc94d\" stroke=\"#1a1024\" stroke-width=\"3\"></circle><ellipse cx=\"50\" cy=\"69\" rx=\"21\" ry=\"14\" fill=\"#c99467\" stroke=\"#1a1024\" stroke-width=\"2.5\"></ellipse><path d=\"M43 64h3.5M53.5 64h3.5\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linecap=\"round\"></path><path d=\"M31 53q5 3 10 0M59 53q5 3 10 0\" stroke=\"#1a1024\" stroke-width=\"2.8\" fill=\"none\" stroke-linecap=\"round\"></path><path d=\"M46 73q4 3 8 0\" fill=\"none\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path></svg>",
+"polpo": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Polpo Giocoliere\"><path d=\"M22 27q28-30 56 0\" stroke=\"#fff\" stroke-dasharray=\"3 4\" stroke-width=\"1.5\" fill=\"none\" opacity=\".55\"></path><circle cx=\"22\" cy=\"20\" r=\"5.5\" fill=\"#3ff0ff\" stroke=\"#1a1024\" stroke-width=\"2.5\"></circle><circle cx=\"50\" cy=\"10\" r=\"5.5\" fill=\"#ff4d8d\" stroke=\"#1a1024\" stroke-width=\"2.5\"></circle><circle cx=\"78\" cy=\"20\" r=\"5.5\" fill=\"#ffc94d\" stroke=\"#1a1024\" stroke-width=\"2.5\"></circle><path d=\"M29 66q-10 14-4 25M39 70q-4 14 0 21M50 72v21M61 70q4 14 0 21M71 66q10 14 4 25\" stroke=\"#1a1024\" stroke-width=\"12\" fill=\"none\" stroke-linecap=\"round\"></path><path d=\"M29 66q-10 14-4 25M39 70q-4 14 0 21M50 72v21M61 70q4 14 0 21M71 66q10 14 4 25\" stroke=\"#b57cff\" stroke-width=\"7\" fill=\"none\" stroke-linecap=\"round\"></path><ellipse cx=\"50\" cy=\"52\" rx=\"27\" ry=\"25\" fill=\"#b57cff\" stroke=\"#1a1024\" stroke-width=\"3\"></ellipse><circle cx=\"35\" cy=\"40\" r=\"3\" fill=\"#9a5ee6\"></circle><circle cx=\"65\" cy=\"37\" r=\"2.5\" fill=\"#9a5ee6\"></circle><circle cx=\"70\" cy=\"58\" r=\"2\" fill=\"#9a5ee6\"></circle><ellipse cx=\"42\" cy=\"54\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"43.2\" cy=\"52.4\" r=\"1.3\" fill=\"#fff\"></circle><ellipse cx=\"58\" cy=\"54\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"59.2\" cy=\"52.4\" r=\"1.3\" fill=\"#fff\"></circle><ellipse cx=\"34\" cy=\"61\" rx=\"4.5\" ry=\"2.4\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse><ellipse cx=\"66\" cy=\"61\" rx=\"4.5\" ry=\"2.4\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse><path d=\"M46 62q4 4 8 0\" fill=\"none\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path></svg>",
+"unicorno": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Unicorno in Pigiama\"><ellipse cx=\"50\" cy=\"94\" rx=\"24\" ry=\"3.5\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M90 64l2 5 5 2-5 2-2 5-2-5-5-2 5-2z\" fill=\"#fff6b0\"></path><path d=\"M10 30l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z\" fill=\"#fff6b0\"></path><path d=\"M26 58c-7-11 0-24 11-26\" stroke=\"#ff4d4d\" stroke-width=\"6\" fill=\"none\" stroke-linecap=\"round\"></path><path d=\"M24 66c-8-12-3-25 9-29\" stroke=\"#ffd84d\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"></path><path d=\"M22 74c-8-10-6-21 0-27\" stroke=\"#4dd2ff\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"></path><path d=\"M24 62c0-21 12-31 26-31s26 10 26 31c0 15-10 25-26 25S24 77 24 62z\" fill=\"#fbf7ff\" stroke=\"#1a1024\" stroke-width=\"3\"></path><path d=\"M44 36l6-26 6 26z\" fill=\"#ffc94d\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M46.5 27l7-2M45.5 32l9-2\" stroke=\"#d99a1e\" stroke-width=\"2\"></path><path d=\"M56 34c8-10 22-10 28 0l6 12-12 1c-4-8-12-10-20-8z\" fill=\"#3b5bdb\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><circle cx=\"90\" cy=\"48\" r=\"5\" fill=\"#fff\" stroke=\"#1a1024\" stroke-width=\"2.5\"></circle><path d=\"M36 58q5 3 10 0M55 58q5 3 10 0\" stroke=\"#1a1024\" stroke-width=\"2.8\" fill=\"none\" stroke-linecap=\"round\"></path><ellipse cx=\"50\" cy=\"75\" rx=\"13\" ry=\"8\" fill=\"#ffd6ec\" stroke=\"#1a1024\" stroke-width=\"2.5\"></ellipse><circle cx=\"45\" cy=\"75\" r=\"1.6\" fill=\"#1a1024\"></circle><circle cx=\"55\" cy=\"75\" r=\"1.6\" fill=\"#1a1024\"></circle><ellipse cx=\"32\" cy=\"66\" rx=\"4\" ry=\"2.2\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse><ellipse cx=\"68\" cy=\"66\" rx=\"4\" ry=\"2.2\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse></svg>",
+"nonna": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Nonna Influencer\"><ellipse cx=\"46\" cy=\"94\" rx=\"26\" ry=\"3.5\" fill=\"#000\" opacity=\".25\"></ellipse><circle cx=\"46\" cy=\"21\" r=\"9\" fill=\"#d7dbe6\" stroke=\"#1a1024\" stroke-width=\"3\"></circle><ellipse cx=\"46\" cy=\"58\" rx=\"22\" ry=\"23\" fill=\"#f6d2b3\" stroke=\"#1a1024\" stroke-width=\"3\"></ellipse><path d=\"M22 52c0-18 12-28 24-28s24 10 24 28c-6-9-15-13-24-13s-18 4-24 13z\" fill=\"#d7dbe6\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><ellipse cx=\"38\" cy=\"59\" rx=\"2.8\" ry=\"3.6\" fill=\"#1a1024\"></ellipse><ellipse cx=\"54\" cy=\"59\" rx=\"2.8\" ry=\"3.6\" fill=\"#1a1024\"></ellipse><circle cx=\"38\" cy=\"59\" r=\"7\" fill=\"#fff\" fill-opacity=\".25\" stroke=\"#ff4d8d\" stroke-width=\"2.5\"></circle><circle cx=\"54\" cy=\"59\" r=\"7\" fill=\"#fff\" fill-opacity=\".25\" stroke=\"#ff4d8d\" stroke-width=\"2.5\"></circle><path d=\"M45 59h2\" stroke=\"#ff4d8d\" stroke-width=\"2.5\"></path><ellipse cx=\"31\" cy=\"68\" rx=\"4\" ry=\"2.2\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse><ellipse cx=\"61\" cy=\"68\" rx=\"4\" ry=\"2.2\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse><path d=\"M40 69q6 5 12 0\" fill=\"none\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M30 80q16 8 32 0\" stroke=\"#fff\" stroke-width=\"3.5\" stroke-dasharray=\"0.1 5\" stroke-linecap=\"round\" fill=\"none\"></path><rect x=\"70\" y=\"58\" width=\"16\" height=\"27\" rx=\"3.5\" fill=\"#1a1024\"></rect><rect x=\"72.5\" y=\"61.5\" width=\"11\" height=\"18\" rx=\"1.5\" fill=\"#3ff0ff\"></rect><path d=\"M84 44c-2-4-8-3-8 1 0 4 8 8 8 8s8-4 8-8c0-4-6-5-8-1z\" fill=\"#ff4d8d\"></path></svg>",
+"dj": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"DJ Tostapane\"><ellipse cx=\"50\" cy=\"92\" rx=\"32\" ry=\"4\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M90 16v11a3 3 0 1 1-2-3V14l7-2v3z\" fill=\"#3ff0ff\"></path><rect x=\"33\" y=\"18\" width=\"15\" height=\"22\" rx=\"4\" fill=\"#e3a458\" stroke=\"#1a1024\" stroke-width=\"2.5\"></rect><rect x=\"52\" y=\"13\" width=\"15\" height=\"25\" rx=\"4\" fill=\"#e3a458\" stroke=\"#1a1024\" stroke-width=\"2.5\"></rect><rect x=\"18\" y=\"34\" width=\"64\" height=\"52\" rx=\"14\" fill=\"#c9d3e0\" stroke=\"#1a1024\" stroke-width=\"3\"></rect><rect x=\"31\" y=\"34\" width=\"18\" height=\"5\" rx=\"2\" fill=\"#1a1024\"></rect><rect x=\"51\" y=\"34\" width=\"18\" height=\"5\" rx=\"2\" fill=\"#1a1024\"></rect><path d=\"M24 46q4-4 8 0\" stroke=\"#fff\" stroke-width=\"2.5\" fill=\"none\" opacity=\".7\"></path><path d=\"M14 58q0-38 36-38t36 38\" stroke=\"#1a1024\" stroke-width=\"4\" fill=\"none\"></path><rect x=\"8\" y=\"52\" width=\"13\" height=\"20\" rx=\"5\" fill=\"#ff4d8d\" stroke=\"#1a1024\" stroke-width=\"3\"></rect><rect x=\"79\" y=\"52\" width=\"13\" height=\"20\" rx=\"5\" fill=\"#ff4d8d\" stroke=\"#1a1024\" stroke-width=\"3\"></rect><ellipse cx=\"40\" cy=\"60\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"41.2\" cy=\"58.4\" r=\"1.3\" fill=\"#fff\"></circle><ellipse cx=\"60\" cy=\"60\" rx=\"3.6\" ry=\"4.6\" fill=\"#1a1024\"></ellipse><circle cx=\"61.2\" cy=\"58.4\" r=\"1.3\" fill=\"#fff\"></circle><path d=\"M41 70q9 8 18 0z\" fill=\"#fff\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linejoin=\"round\"></path></svg>",
+"mimo": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Mimo Muto\"><ellipse cx=\"50\" cy=\"95\" rx=\"28\" ry=\"3.5\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M5 34v44M95 34v44\" stroke=\"#8fb8ff\" stroke-width=\"2\" stroke-dasharray=\"4 4\"></path><path d=\"M24 93l4-22h44l4 22z\" fill=\"#fff\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M27 79h46M26 87h48\" stroke=\"#1a1024\" stroke-width=\"4\"></path><circle cx=\"13\" cy=\"54\" r=\"6.5\" fill=\"#fff\" stroke=\"#1a1024\" stroke-width=\"3\"></circle><circle cx=\"87\" cy=\"54\" r=\"6.5\" fill=\"#fff\" stroke=\"#1a1024\" stroke-width=\"3\"></circle><ellipse cx=\"50\" cy=\"50\" rx=\"22\" ry=\"24\" fill=\"#fbfbff\" stroke=\"#1a1024\" stroke-width=\"3\"></ellipse><path d=\"M25 36c3-13 47-15 51-2-11 4-40 6-51 2z\" fill=\"#1a1024\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M53 24l2-6\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linecap=\"round\"></path><ellipse cx=\"42\" cy=\"51\" rx=\"3.3\" ry=\"4.3\" fill=\"#1a1024\"></ellipse><ellipse cx=\"58\" cy=\"51\" rx=\"3.3\" ry=\"4.3\" fill=\"#1a1024\"></ellipse><path d=\"M42 42v4M42 56v4M58 42v4M58 56v4\" stroke=\"#1a1024\" stroke-width=\"1.6\" stroke-linecap=\"round\"></path><path d=\"M45 64q5-3.5 10 0q-5 4-10 0z\" fill=\"#e0342b\"></path></svg>",
+"rocker": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Rocker Cotonato\"><ellipse cx=\"50\" cy=\"94\" rx=\"26\" ry=\"3.5\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M13 60c-7-21 5-42 20-40 5-11 29-11 34 0 15-2 27 19 20 40-6 4-12-2-14-6H27c-2 4-8 10-14 6z\" fill=\"#7a4bd6\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M30 30q8-6 16-2M56 26q8-2 14 4\" stroke=\"#b394ff\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"></path><ellipse cx=\"50\" cy=\"61\" rx=\"20\" ry=\"23\" fill=\"#f6d2b3\" stroke=\"#1a1024\" stroke-width=\"3\"></ellipse><ellipse cx=\"42\" cy=\"57\" rx=\"3.4\" ry=\"4.4\" fill=\"#1a1024\"></ellipse><circle cx=\"43.1\" cy=\"55.5\" r=\"1.2\" fill=\"#fff\"></circle><ellipse cx=\"58\" cy=\"57\" rx=\"3.4\" ry=\"4.4\" fill=\"#1a1024\"></ellipse><circle cx=\"59.1\" cy=\"55.5\" r=\"1.2\" fill=\"#fff\"></circle><path d=\"M66 60l-4 6h4l-4 7\" stroke=\"#3ff0ff\" stroke-width=\"2.5\" fill=\"none\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M42 70q8 8 16 0z\" fill=\"#5a0f1e\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linejoin=\"round\"></path><path d=\"M47 74q3 8 6 0\" fill=\"#ff5a7a\" stroke=\"#1a1024\" stroke-width=\"2\"></path></svg>",
+"diva": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Diva del Karaoke\"><ellipse cx=\"50\" cy=\"95\" rx=\"26\" ry=\"3.5\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M86 28l2 5 5 2-5 2-2 5-2-5-5-2 5-2z\" fill=\"#ff4d8d\"></path><path d=\"M14 24l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z\" fill=\"#3ff0ff\"></path><path d=\"M21 90c-6-31 0-64 29-64s35 33 29 64c-6 2-11-2-11-6V58H32v26c0 4-5 8-11 6z\" fill=\"#ffd45c\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><ellipse cx=\"50\" cy=\"58\" rx=\"18\" ry=\"21\" fill=\"#f6d2b3\" stroke=\"#1a1024\" stroke-width=\"3\"></ellipse><path d=\"M31 52c4-15 32-17 38 0-10-6-28-6-38 0z\" fill=\"#ffd45c\" stroke=\"#1a1024\" stroke-width=\"2.5\" stroke-linejoin=\"round\"></path><ellipse cx=\"43\" cy=\"59\" rx=\"3.2\" ry=\"4.2\" fill=\"#1a1024\"></ellipse><circle cx=\"44\" cy=\"57.6\" r=\"1.1\" fill=\"#fff\"></circle><ellipse cx=\"57\" cy=\"59\" rx=\"3.2\" ry=\"4.2\" fill=\"#1a1024\"></ellipse><circle cx=\"58\" cy=\"57.6\" r=\"1.1\" fill=\"#fff\"></circle><path d=\"M38 55l3 2M62 55l-3 2\" stroke=\"#1a1024\" stroke-width=\"2\" stroke-linecap=\"round\"></path><ellipse cx=\"37\" cy=\"66\" rx=\"3.8\" ry=\"2\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse><ellipse cx=\"63\" cy=\"66\" rx=\"3.8\" ry=\"2\" fill=\"#ff6f9f\" opacity=\".6\"></ellipse><ellipse cx=\"50\" cy=\"70\" rx=\"4\" ry=\"4.6\" fill=\"#e0342b\" stroke=\"#1a1024\" stroke-width=\"2\"></ellipse><path d=\"M70 72l6 16\" stroke=\"#1a1024\" stroke-width=\"6\" stroke-linecap=\"round\"></path><circle cx=\"68\" cy=\"66\" r=\"6.5\" fill=\"#c9d3e0\" stroke=\"#1a1024\" stroke-width=\"3\"></circle></svg>",
+"robo": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"200\" height=\"200\" aria-label=\"Robo-Popstar\"><ellipse cx=\"50\" cy=\"94\" rx=\"26\" ry=\"3.5\" fill=\"#000\" opacity=\".25\"></ellipse><path d=\"M88 56l2 5 5 2-5 2-2 5-2-5-5-2 5-2z\" fill=\"#fff6b0\"></path><path d=\"M12 70l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z\" fill=\"#fff6b0\"></path><path d=\"M50 23V12\" stroke=\"#1a1024\" stroke-width=\"3\"></path><path d=\"M50 2l2.6 5.2 5.6.8-4 4 1 5.6-5.2-2.7-5.2 2.7 1-5.6-4-4 5.6-.8z\" fill=\"#ffc94d\" stroke=\"#1a1024\" stroke-width=\"2\" stroke-linejoin=\"round\"></path><rect x=\"13\" y=\"38\" width=\"9\" height=\"17\" rx=\"3\" fill=\"#ff4d8d\" stroke=\"#1a1024\" stroke-width=\"3\"></rect><rect x=\"78\" y=\"38\" width=\"9\" height=\"17\" rx=\"3\" fill=\"#ff4d8d\" stroke=\"#1a1024\" stroke-width=\"3\"></rect><path d=\"M31 70h38l4 20H27z\" fill=\"#ff4d8d\" stroke=\"#1a1024\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M50 74l2 4 4.4.6-3.2 3.1.8 4.3-4-2.1-4 2.1.8-4.3-3.2-3.1 4.4-.6z\" fill=\"#fff\"></path><rect x=\"21\" y=\"22\" width=\"58\" height=\"49\" rx=\"15\" fill=\"#e3e8f5\" stroke=\"#1a1024\" stroke-width=\"3\"></rect><rect x=\"27\" y=\"34\" width=\"46\" height=\"21\" rx=\"8.5\" fill=\"#1a1024\"></rect><path d=\"M39 41c-1.5-2.5-6-2-6 1 0 3 6 6.5 6 6.5s6-3.5 6-6.5c0-3-4.5-3.5-6-1z\" fill=\"#ff4d8d\"></path><path d=\"M61 41c-1.5-2.5-6-2-6 1 0 3 6 6.5 6 6.5s6-3.5 6-6.5c0-3-4.5-3.5-6-1z\" fill=\"#ff4d8d\"></path><path d=\"M40 63h20\" stroke=\"#8d9bb0\" stroke-width=\"3\" stroke-linecap=\"round\"></path></svg>"
+};
 const SKINS = {
   base:   {name:'Base',           price:0,    desc:'La barra di serie'},
   rgb:    {name:'Arcobaleno',     price:2.49, desc:'Il colore cambia in continuazione'},
@@ -290,6 +345,13 @@ function drawSkinPreview(cv, id, now, col){
 
 
 
+const FIELD_THEMES = {
+  neon:   {floor:'#0b0f17', grid:'rgba(90,110,150,.16)', mid:'rgba(200,210,235,.45)', wall:'rgba(170,180,210,.55)'},
+  cibo:   {floor:'#7a1e27', grid:null, mid:'rgba(255,230,200,.6)', wall:'#c8904f'},
+  mostri: {floor:'#1a1230', grid:'rgba(181,124,255,.18)', mid:'rgba(200,190,255,.5)', wall:'rgba(157,143,201,.8)'},
+  animali:{floor:'#238a47', grid:null, mid:'rgba(255,255,255,.55)', wall:'#8fd46a'},
+  star:   {floor:'#120a1f', grid:'rgba(255,77,141,.14)', mid:'rgba(255,255,255,.45)', wall:'#ff4d8d'}
+};
 // ── Visuale 3D "Tribuna" del telefono ──
 // Il telefono vede il campo da dietro la propria barra. Coordinate locali:
 // u = posizione laterale (0..FH), z = profondità dalla propria barra (0..FW), h = altezza.
@@ -352,14 +414,32 @@ class Field3D {
     const hz = this.P(FH/2, 0, FW), glow = c.createRadialGradient(hz[0], hz[1], 0, hz[0], hz[1], w*.8);
     glow.addColorStop(0, COL[opp] + '29'); glow.addColorStop(1, COL[opp] + '00');
     c.fillStyle = glow; c.fillRect(x, y, w, h);
-    this.poly(c, [[0,0,0],[FH,0,0],[FH,0,FW],[0,0,FW]], '#0b0f17');
-    for(let z = .2; z < FW; z += .2) this.line(c, [0,0,z], [FH,0,z], 'rgba(90,110,150,.16)', 1);
-    for(const u of [.25, .5, .75]) this.line(c, [u,0,0], [u,0,FW], 'rgba(90,110,150,.12)', 1);
-    for(let u = 0; u < FH; u += .08) this.line(c, [u + .01,0,FW/2], [u + .05,0,FW/2], 'rgba(200,210,235,.45)', 2);
+    const T = FIELD_THEMES[st.theme] || FIELD_THEMES.neon;   // campi a tema dell'album
+    this.poly(c, [[0,0,0],[FH,0,0],[FH,0,FW],[0,0,FW]], T.floor);
+    if(st.theme === 'cibo'){   // tovaglia a quadri
+      const n = 8, m = 13;
+      for(let i = 0; i < n; i++) for(let j = 0; j < m; j++) if((i + j) % 2) this.poly(c, [[i*FH/n,0,j*FW/m],[(i+1)*FH/n,0,j*FW/m],[(i+1)*FH/n,0,(j+1)*FW/m],[i*FH/n,0,(j+1)*FW/m]], '#4a1218');
+    } else if(st.theme === 'animali'){   // erba a strisce
+      for(let j = 0; j < 16; j += 2) this.poly(c, [[0,0,j*FW/16],[FH,0,j*FW/16],[FH,0,(j+1)*FW/16],[0,0,(j+1)*FW/16]], '#1d6e39');
+    } else if(st.theme === 'star'){   // luci del palco
+      for(const [u, z, col] of [[.25, FW*.7, 'rgba(255,77,141,.28)'], [.75, FW*.35, 'rgba(63,240,255,.22)']]){
+        const q = this.P(u, 0, z), g = c.createRadialGradient(q[0], q[1], 0, q[0], q[1], w*.35); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = g; c.fillRect(x, y, w, h);
+      }
+    } else if(st.theme === 'mostri'){   // ragnatele negli angoli lontani
+      for(const u0 of [0, FH]){ const sgn = u0 ? -1 : 1;
+        for(let k = 1; k <= 3; k++) this.line(c, [u0, 0, FW - .12*k], [u0 + sgn*.12*k, 0, FW], 'rgba(200,190,255,.35)', 1);
+        this.line(c, [u0, 0, FW], [u0 + sgn*.3, 0, FW - .3], 'rgba(200,190,255,.35)', 1); }
+    }
+    if(T.grid){
+      for(let z = .2; z < FW; z += .2) this.line(c, [0,0,z], [FH,0,z], T.grid, 1);
+      for(const u of [.25, .5, .75]) this.line(c, [u,0,0], [u,0,FW], T.grid, 1);
+    }
+    for(let u = 0; u < FH; u += .08) this.line(c, [u + .01,0,FW/2], [u + .05,0,FW/2], T.mid, 2);
     const wh = .035;
     this.poly(c, [[0,0,0],[0,wh,0],[0,wh,FW],[0,0,FW]], 'rgba(120,130,160,.10)');
     this.poly(c, [[FH,0,0],[FH,wh,0],[FH,wh,FW],[FH,0,FW]], 'rgba(120,130,160,.10)');
-    this.line(c, [0,wh,0], [0,wh,FW], 'rgba(170,180,210,.55)', 2); this.line(c, [FH,wh,0], [FH,wh,FW], 'rgba(170,180,210,.55)', 2);
+    this.line(c, [0,wh,0], [0,wh,FW], T.wall, 2); this.line(c, [FH,wh,0], [FH,wh,FW], T.wall, 2);
     this.line(c, [0,0,FW], [FH,0,FW], COL[opp] + '80', 2); this.line(c, [0,0,0], [FH,0,0], COL[me] + '80', 2);
     const drawBall = () => {
       if(!st.ball) return;
@@ -437,8 +517,8 @@ const WINR = [{coins:60, tro:30, pass:60, xp:40}, {coins:30, tro:25, pass:40, xp
 const LOSSR = [{tro:10, pass:30, xp:20}, {tro:15, pass:20, xp:20}, {tro:20, pass:10, xp:20}];
 const CHEST_MS = [{Argento:5e3, Oro:15e3}, {Argento:60e3, Oro:180e3}, {Argento:3*3600e3, Oro:8*3600e3}];
 const CHEST_R = [{Argento:[120,160,10,14], Oro:[300,400,20,25]}, {Argento:[60,90,6,8], Oro:[150,200,12,15]}, {Argento:[30,50,2,4], Oro:[80,120,6,9]}];
-const WELCOME = [{t:'coins',n:300}, {t:'frag',n:20}, {t:'gems',n:30}];
-const CATS = [{id:'skin', label:'Skin'}, {id:'scia', label:'Scia'}, {id:'colpo', label:'Colpo'}, {id:'gol', label:'Gol'}];
+const WELCOME = [{t:'coins',n:300}, {t:'frag',n:20}, {t:'gems',n:30}, {t:'fig',id:'polpetta'}];
+const CATS = [{id:'skin', label:'Skin'}, {id:'scia', label:'Scia'}, {id:'colpo', label:'Colpo'}, {id:'gol', label:'Gol'}, {id:'campo', label:'Campo'}];
 const COS = [
   {id:'s_base',   cat:'skin',  tex:'base',   name:'Base'},
   {id:'s_rgb',    cat:'skin',  tex:'rgb',    name:'RGB', gems:150},
@@ -488,6 +568,8 @@ const MISS = [
 ];
 const ROAD = [[30,{t:'coins',n:100}], [60,{t:'gems',n:20}], [100,{t:'frag',n:15}], [150,{t:'coins',n:200}], [250,{t:'gems',n:40}], [400,{t:'frag',n:30}], [600,{t:'cos',id:'s_oro'}], [1000,{t:'gems',n:100}]];
 const OFFERS = {
+  miss:  {pre:'TE NE MANCA SOLO UNA!', get title(){ return 'Completa la pagina ' + PAGES[ch(S.missId).p].name; }, get desc(){ return 'La figurina che ti manca: ' + ch(S.missId).name; }, price:1.99, was:0, min:30,
+          give(){ apply({t:'fig', id:S.missId}); }},
   boost: {pre:'SEI BLOCCATO? · -80%', title:'Pacchetto Potenziamento', desc:'80 frammenti di barra · 2.000 monete', price:2.99, was:14.99, min:30,
           give(){ S.bar.frag += 80; S.coins += 2000; }},
   cometa:{pre:'OFFERTA A TEMPO · -75%', title:'Pacchetto Cometa', desc:'Skin leggendaria Cometa · 500 gemme · 1.000 monete', price:9.99, was:39.99, min:360,
@@ -517,10 +599,11 @@ function rlabel(r){
   if(r.t === 'gems') return r.n + ' gemme';
   if(r.t === 'frag') return r.n + ' frammenti';
   if(r.t === 'ava') return 'Avatar ' + av(r.id).name;
+  if(r.t === 'fig') return 'Figurina ' + ch(r.id).name;
   const c = cos(r.id); return catWord(c.cat) + c.name;
 }
 // valore di un premio in monete, secondo i prezzi del negozio (60 gemme = 1.000 monete; 10 frammenti = 250 monete)
-const value = r => r.t === 'coins' ? r.n : r.t === 'gems' ? r.n*16 : r.t === 'frag' ? r.n*25 : r.t === 'ava' ? 1500 : (cos(r.id).gems || 250)*16;
+const value = r => r.t === 'coins' ? r.n : r.t === 'gems' ? r.n*16 : r.t === 'frag' ? r.n*25 : r.t === 'ava' ? 1500 : r.t === 'fig' ? RAR[ch(r.id).r].val : (cos(r.id).gems || 250)*16;
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'})[ch]);
 const dayKey = off => new Date(Date.now() + ((S.dayShift || 0) + (off || 0))*864e5).toDateString();
 
@@ -535,6 +618,8 @@ const I = {
   lock:(s=18, c='#8d9bb0') => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`,
   check:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>',
   gift:(s=18, c='#ff8fb6') => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M3 13h18M12 9v12M12 9c-2-4-6-4-6-1.5S10 9 12 9zm0 0c2-4 6-4 6-1.5S14 9 12 9z"/></svg>`,
+  sparkle:(s=15) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="#e7b8ff"><path d="M12 2l2.2 6.3L20 10l-5.8 1.7L12 18l-2.2-6.3L4 10l5.8-1.7z"/><path d="M19 15l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z"/></svg>`,
+  book:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M9 8h6M9 12h4"/></svg>',
   shop:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
   bar:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="10" width="18" height="5" rx="1.5"/><path d="M12 3v4M9 5l3-2 3 2"/></svg>',
   arena:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 12h16M9 6h6M9 18h6"/></svg>',
@@ -562,7 +647,8 @@ function fresh(){
     chests:[{k:'Argento', st:'locked'}, {k:'', st:'empty'}, {k:'', st:'empty'}, {k:'', st:'empty'}],
     passXp:0, premium:false, claimed:{}, bought:{}, showOdds:false, needGems:false,
     mdone:{}, mclaim:{}, streak:{n:0, last:''}, road:0, offers:{},
-    cur:0, log:[]
+    cur:0, log:[],
+    owned:{}, brill:0, fan:'', albumPage:0, pagesDone:{}, title:'', field:'neon', missSeen:{}, missId:'', albumNew:false
   };
 }
 let S;
@@ -576,6 +662,7 @@ function apply(r){
   else if(r.t === 'frag') S.bar.frag += r.n;
   else if(r.t === 'cos') S.cosOwned[r.id] = 1;
   else if(r.t === 'ava') S.avaOwned[r.id] = 1;
+  else if(r.t === 'fig') giveFig(r);
 }
 function gain(list){ for(const r of list){ apply(r); S.cur += value(r); } }
 const chestState = c => c.st === 'unlocking' && c.end <= Date.now() ? 'ready' : c.st;
@@ -617,7 +704,7 @@ function confetti(n = 46){
   buzz([20, 30, 20]);
 }
 const rewardModal = (title, list, extra) => Object.assign({title, color:'#ffc94d', lines:list.map(rlabel), primary:{label:'Fantastico!', fn:closeModal}}, extra || {});
-function pay(label, euro, give){
+function pay(label, euro, give, silent){
   openModal({title:'Conferma acquisto', color:'#ff8fb6', lines:[label, 'Prezzo: € ' + eu(euro)],
     note:'Simulazione: nessun addebito reale. Il totale si vede nel Profilo.',
     primary:{label:'Paga € ' + eu(euro), bg:'#ff4d8d', fn:() => {
@@ -625,7 +712,8 @@ function pay(label, euro, give){
       S.spent = Math.round((S.spent + euro)*100)/100;
       S.purchases.unshift({label, price:'€ ' + eu(euro)});
       commit(); buzz(30);
-      if(!MOD) openModal({title:'Grazie!', color:'#ff8fb6', lines:[label + ' è tuo.'], primary:{label:'Continua', fn:closeModal}});
+      if(!MOD && !silent) openModal({title:'Grazie!', color:'#ff8fb6', lines:[label + ' è tuo.'], primary:{label:'Continua', fn:closeModal}});
+      if(!silent) flushPending();
     }},
     secondary:{label:'Annulla', fn:closeModal}});
 }
@@ -638,7 +726,7 @@ function spend(kind, label, n, give){
   openModal({title:'Confermi?', lines:[label], primary:{label:'Spendi ' + num(n) + ' ' + word, fn:() => {
     MOD = null; renderModal();
     if(kind === 'gems') S.gems -= n; else S.coins -= n;
-    give(); commit();
+    give(); commit(); if(!$('#sheet').classList.contains('hidden') || !$('#chest').classList.contains('hidden')) return; flushPending();
   }}, secondary:{label:'Annulla', fn:closeModal}});
 }
 
@@ -647,6 +735,8 @@ function chestRoll(k){
   const [c0, c1, f0, f1] = CHEST_R[phase()][k], out = [{t:'coins', n:rnd(c0, c1)}, {t:'frag', n:rnd(f0, f1)}];
   if(k === 'Oro' && Math.random() < .05 && !S.cosOwned.s_cometa) out.push({t:'cos', id:'s_cometa'});
   else if(k === 'Oro') out.push({t:'gems', n:rnd(3, 8)});
+  out.push({t:'fig', id:rollFig(ODDS[k])});                  // figurine: 1 nel baule d'argento, 2 in quello d'oro
+  if(k === 'Oro') out.push({t:'fig', id:rollFig(ODDS[k])});
   return out;
 }
 let chestTimers = [];
@@ -672,6 +762,13 @@ function openChestAnim(k, o = {}){
     if(shown >= list.length) return;
     const r = list[shown++], c = r.t === 'coins' ? '#ffc94d' : r.t === 'gems' ? '#5cf2ff' : r.t === 'frag' ? '#3ff0ff' : '#ff8fb6';
     const skin = r.t === 'cos' && cos(r.id).cat === 'skin';
+    if(r.t === 'fig'){
+      const f = ch(r.id), fr = RAR[f.r];
+      $('#crw').insertAdjacentHTML('beforeend', `<div class="rw" style="height:auto;min-height:100px;border:1px solid ${fr.c};box-shadow:0 0 14px ${fr.c}40">${chibiHtml(r.id, 50)}<span style="font-size:13px;font-weight:700;color:${r.isNew ? '#5dffa0' : '#e7b8ff'}">${r.isNew ? 'NUOVA!' : '+' + r.dup + ' brill.'}</span><span style="font-size:10px;color:#c9d3e0">${esc(f.name)}</span></div>`);
+      buzz(f.r === 'L' ? [30, 40, 60] : 15);
+      if(shown >= list.length){ $('#cOk').classList.remove('hidden'); $('#cSkip').classList.add('hidden'); }
+      return;
+    }
     const ico = r.t === 'coins' ? I.coin(26) : r.t === 'gems' ? I.gem(26) : r.t === 'frag' ? I.frag(26) : r.t === 'ava' ? avaHtml(r.id, 34) : skin ? padCanvas(r.id, 80, 26) : `<div class="sw" style="${cos(r.id).sw}"></div>`;
     const big = r.t === 'cos' || r.t === 'ava' ? 'NUOVO!' : '+' + num(r.n), small = r.t === 'coins' ? 'monete' : r.t === 'gems' ? 'gemme' : r.t === 'frag' ? 'frammenti di barra' : rlabel(r);
     $('#crw').insertAdjacentHTML('beforeend', `<div class="rw" style="border:1px solid ${c};box-shadow:0 0 14px ${c}40">${ico}<span style="font-size:18px;font-weight:700;color:${c}">${big}</span><span style="font-size:11px;color:#c9d3e0">${esc(small)}</span></div>`);
@@ -688,7 +785,7 @@ function openChestAnim(k, o = {}){
   stop();
   chestTimers.push(setTimeout(() => { open(); chestTimers.push(setInterval(() => { reveal(); if(shown >= list.length) stop(); }, 480)); }, 1200));
   $('#cSkip').onclick = () => { stop(); open(); while(shown < list.length) reveal(); };
-  $('#cOk').onclick = () => { stop(); el.classList.add('hidden'); el.innerHTML = ''; if(o.after) o.after(); };
+  $('#cOk').onclick = () => { stop(); el.classList.add('hidden'); el.innerHTML = ''; render(); if(o.after) o.after(); flushPending(); };
 }
 function clickChest(i){
   const c = S.chests[i], st = chestState(c), now = Date.now();
@@ -815,6 +912,19 @@ const A = {
   tier(){ if(S.passXp >= 1000) return; spend('gems', 'Un livello del Pass', 30, () => { S.passXp = (Math.floor(S.passXp/100) + 1)*100; }); },
   bar(i){ chartSel = chartSel === i ? -1 : i; render(); },
   reset(){ openModal({title:'Ricominciare?', lines:['Tutti i progressi e gli acquisti finti verranno azzerati.'], primary:{label:'Ricomincia', bg:'#ff4d8d', fn:() => { closeModal(); S = fresh(); commit(); openProfileEditor(true); }}, secondary:{label:'Annulla', fn:closeModal}}); },
+  page(i){ S.albumPage = i; commit(); },
+  fig(id){ figSheet(id); },
+  preview(){ previewSheet(); },
+  pack(paid){
+    if(paid) return pay('Bustina «Leggenda garantita»', LEGEND_EUR, () => packSheet(true), true);
+    spend('gems', 'Bustina di figurine', PACK_GEMS, () => packSheet(false));
+  },
+  field(id){
+    const i = FIELDS.findIndex(f => f.id === id);
+    if(i > 0 && !S.pagesDone[i - 1]) return openModal({title:'Campo ' + FIELDS[i].name, lines:['Si sblocca completando la pagina ' + PAGES[i - 1].name + ' dell\'album.'], primary:{label:'Vai all\'album', fn:() => { closeModal(); S.albumPage = i - 1; A.tab('album'); }}, secondary:{label:'Chiudi', fn:closeModal}});
+    S.field = id; commit();
+  },
+  title(){ const t = PAGES.filter((P, i) => S.pagesDone[i]).map(P => P.titolo); if(t.length < 2) return; S.title = t[(t.indexOf(S.title) + 1) % t.length]; commit(); },
   nextDay(){ S.dayShift = (S.dayShift || 0) + 1; commit(); },
   skipDay(){ S.dayShift = (S.dayShift || 0) + 2; commit(); }
 };
@@ -844,13 +954,13 @@ function render(){
   const nb = (t, ico, lab, dot) => `<button class="${S.tab === t ? 'on' : ''}" onclick="A.tab('${t}')">${dot ? `<span class="nd" style="background:${dot}"></span>` : ''}${ico}${lab}</button>`;
   const shopDot = !S.bought.d_free || Object.keys(OFFERS).some(offerOn);
   $('#nav').innerHTML = nb('shop', I.shop, 'Negozio', shopDot ? '#ff4d8d' : '') + nb('bars', I.bar, 'Barra', upReady ? '#5dffa0' : '') +
-    nb('lobby', I.arena, 'Arena') + nb('pass', I.crown(22), 'Pass', passDot ? '#ff4d8d' : '') + nb('profile', I.user, 'Profilo');
-  $('#main').innerHTML = ({lobby:vLobby, shop:vShop, bars:vBars, pass:vPass, profile:vProfile})[S.tab](reached, passDot, upReady);
+    nb('lobby', I.arena, 'Arena') + nb('album', I.book, 'Album', S.albumNew ? '#5dffa0' : '') + nb('pass', I.crown(22), 'Pass', passDot ? '#ff4d8d' : '') + nb('profile', I.user, 'Profilo');
+  $('#main').innerHTML = ({lobby:vLobby, shop:vShop, bars:vBars, album:vAlbum, pass:vPass, profile:vProfile})[S.tab](reached, passDot, upReady);
   tick(true);
 }
 function offerBanner(id){
   const o = OFFERS[id];
-  return `<button class="offer" onclick="A.tab('shop')"><div class="oico">${id === 'cometa' ? '<div class="comet" style="width:30px;height:7px"></div>' : I.frag(26)}</div>
+  return `<button class="offer" onclick="A.tab('shop')"><div class="oico">${id === 'cometa' ? '<div class="comet" style="width:30px;height:7px"></div>' : id === 'miss' ? chibiHtml(S.missId, 38, true) : I.frag(26)}</div>
     <div style="flex-grow:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:11px;font-weight:700;color:#ff8fb6;letter-spacing:.08em">${o.pre}</span>
     <span style="font-size:15px;font-weight:700">${o.title}</span><span style="font-size:12px;color:#b9c6d8">Termina tra <b class="tab" style="color:#ff8fb6" data-t="o_${id}"></b></span></div>
     <span style="font-size:15px;font-weight:700;color:#ff8fb6">€ ${eu(o.price)}</span></button>`;
@@ -918,9 +1028,9 @@ function vShop(){
   return `<div class="col">
     ${S.needGems ? `<div style="font-size:13px;font-weight:700;color:#ff8fb6">Ti servono gemme</div>${gemGrid()}` : ''}
     ${act.map(id => { const o = OFFERS[id]; return `<div class="box pinkbox"><div class="hrow"><span style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#ff8fb6">${o.pre}</span><span class="tab" style="font-size:12px;color:#ff8fb6" data-t="o_${id}"></span></div>
-      <div style="display:flex;gap:12px;align-items:center"><div style="width:76px;height:76px;border-radius:12px;background:#24101d;display:flex;align-items:center;justify-content:center;flex-shrink:0">${id === 'cometa' ? padCanvas('s_cometa', 70, 30) : I.frag(40)}</div>
+      <div style="display:flex;gap:12px;align-items:center"><div style="width:76px;height:76px;border-radius:12px;background:#24101d;display:flex;align-items:center;justify-content:center;flex-shrink:0">${id === 'cometa' ? padCanvas('s_cometa', 70, 30) : id === 'miss' ? chibiHtml(S.missId, 64, true) : I.frag(40)}</div>
       <div style="display:flex;flex-direction:column;gap:3px"><span style="font-size:17px;font-weight:700">${o.title}</span><span style="font-size:12px;color:#c9d3e0">${o.desc}</span>
-      <span class="small"><s>€ ${eu(o.was)}</s> · solo per poco</span></div></div>
+      <span class="small">${o.was ? `<s>€ ${eu(o.was)}</s> · ` : ''}solo per poco</span></div></div>
       <button class="bigbtn" onclick="A.offer('${id}')" style="background:#ff4d8d;color:#1a0610">Compra · € ${eu(o.price)}</button></div>`; }).join('')}
     <div class="box" style="align-items:center"><div style="display:flex;flex-direction:column;gap:3px;flex-grow:1"><span style="font-size:11px;font-weight:700;color:var(--cy);letter-spacing:.08em">SOLO PER TE · UNA VOLTA SOLA</span>
       <span style="font-size:15px;font-weight:700">Pacchetto Inizio</span><span style="font-size:12px;color:#c9d3e0">150 gemme · 20 frammenti di barra · 500 monete</span></div>
@@ -963,6 +1073,10 @@ function vBars(){
       <div class="small" style="line-height:1.4">I frammenti di barra si trovano nei bauli, nel Pass e nel negozio. Potenziamenti leggeri e con un tetto: al livello 5 la barra è più lunga dell'8% e più veloce del 12%. L'aspetto non cambia il gioco.</div>`;
   } else {
     body = `<div class="cats">${CATS.map(k => `<button class="${k.id === S.cosCat ? 'on' : ''}" onclick="A.cat('${k.id}')">${k.label}</button>`).join('')}</div>
+      ${S.cosCat === 'campo' ? `<div class="g3">${FIELDS.map((f, i) => {
+        const has = i === 0 || !!S.pagesDone[i - 1], inUse = S.field === f.id;
+        return `<button class="card" style="height:116px;${inUse ? 'border:2px solid #3ff0ff' : ''}" onclick="A.field('${f.id}')"><div style="width:60px;height:40px;border-radius:6px;${f.sw}"></div>
+          <span style="font-size:13px;font-weight:700">${f.name}</span><span style="font-size:11px;font-weight:700;color:${inUse ? '#3ff0ff' : has ? '#e8f4ff' : '#ffc94d'}">${inUse ? 'In uso' : has ? 'Usa' : 'Album: ' + PAGES[i - 1].name}</span></button>`; }).join('')}</div>` : ''}
       <div class="g3">${COS.filter(o => o.cat === S.cosCat).map(o => {
         const owned = !!S.cosOwned[o.id], inUse = S.eq[o.cat] === o.id;
         const st = inUse ? 'In uso' : owned ? 'Usa' : o.pack ? 'Offerta' : o.pass ? 'Pass Premium' : o.gems + ' gemme';
@@ -970,7 +1084,7 @@ function vBars(){
         return `<button class="card" style="height:116px;${inUse ? 'border:2px solid #3ff0ff' : ''}" onclick="A.cos('${o.id}')">${o.badge && !owned ? `<span class="badge" style="font-size:9px">${o.badge}</span>` : ''}
           ${o.cat === 'skin' ? padCanvas(o.id, 96, 30) : `<div class="sw" style="${o.sw}"></div>`}
           <span style="font-size:13px;font-weight:700">${o.name}</span><span style="font-size:11px;font-weight:700;color:${stc}">${st}</span></button>`; }).join('')}</div>
-      <div class="small" style="line-height:1.4">Scia, colpo e gol si vedono durante la partita.</div>`;
+      <div class="small" style="line-height:1.4">Scia, colpo, gol e campo si vedono durante la partita. I campi si sbloccano completando le pagine dell'album.</div>`;
   }
   return `<div class="col"><div class="seg"><button class="${up ? 'on' : ''}" onclick="A.barTab('up')">Potenzia</button><button class="${up ? '' : 'on'}" onclick="A.barTab('look')">Aspetto</button></div>
     <div class="prev">${padCanvas(S.eq.skin, 240, 60, 'floaty')}</div>${body}</div>`;
@@ -1020,7 +1134,7 @@ function vProfile(){
   const stats = [['Partite', num(S.matches)], ['Vittorie', num(S.wins)], ['% vittorie', Math.round(S.wins/Math.max(1, S.matches)*100) + '%'], ['Trofei', num(S.trophies)]];
   const prog = [['Livello barra', S.bar.lvl + '/5', S.bar.lvl/5*100], ['Aspetti', ownedCos + '/' + COS.length, ownedCos/COS.length*100]];
   return `<div class="col"><div style="display:flex;align-items:center;gap:14px">${avaHtml(S.avatar, 64, S.lvl)}
-    <div style="flex-grow:1;min-width:0"><div style="font-size:20px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(S.name || 'Giocatore')}</div><div class="small">Livello ${S.lvl} · Arena Neon · ${num(S.trophies)} trofei</div></div>
+    <div style="flex-grow:1;min-width:0"><div style="font-size:20px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(S.name || 'Giocatore')}</div><div class="small">Livello ${S.lvl} · Arena Neon · ${num(S.trophies)} trofei</div>${S.title ? `<button onclick="A.title()" style="margin-top:4px;font-size:12px;font-weight:700;color:#ffc94d">«${esc(S.title)}»</button>` : ''}</div>
     <button class="smbtn" onclick="A.profile()">Modifica</button></div>
     <div class="g2">${stats.map(([l, v]) => `<div class="stbox"><span style="font-size:11px;color:var(--mu)">${l}</span><span style="font-size:20px;font-weight:700">${v}</span></div>`).join('')}</div>
     ${chart()}
@@ -1055,6 +1169,211 @@ setInterval(() => { if(!G.on) tick(false); }, 1000);
 function drawPreviews(now){
   document.querySelectorAll('canvas.pv').forEach(cv => { if(cv.dataset.skin && cv.offsetParent) drawSkinPreview(cv, skinTexId(cv.dataset.skin), now, '#3ff0ff'); });
 }
+
+// ════════════════ ALBUM DI FIGURINE ════════════════
+// Ogni figurina sblocca un tifoso che fa il tifo a bordo campo; ogni pagina completa sblocca un campo e un titolo.
+const PAGES = [
+  {id:'cibo',    name:'Cibo',    campo:'Pizzeria',          titolo:'Buongustaio',     accent:'#ff8a5c', box:'background:#170d0d;border:1px solid #4a2626',
+   field:'background:repeating-conic-gradient(#7a1e27 0 25%,#4a1218 0 50%) 0 0/36px 36px;border:7px solid #a8703f;box-shadow:inset 0 0 30px rgba(0,0,0,.45)', line:'rgba(255,220,190,.35)'},
+  {id:'mostri',  name:'Mostri',  campo:'Castello stregato', titolo:'Acchiappamostri', accent:'#b57cff', box:'background:#120e1d;border:1px solid #332a50',
+   field:'background:radial-gradient(circle at 30% 25%,#3a2a5a,#140e22 70%);border:7px solid #4a4060', line:'rgba(200,190,255,.35)'},
+  {id:'animali', name:'Animali', campo:'Giungla',           titolo:'Zoologo',         accent:'#5dd65a', box:'background:#0c160f;border:1px solid #22452e',
+   field:'background:repeating-linear-gradient(0deg,#1f7a3f 0 26px,#238a47 26px 52px);border:7px solid #3a6b2a', line:'rgba(255,255,255,.4)'},
+  {id:'star',    name:'Star',    campo:'Palco',             titolo:'Star dell’Arena', accent:'#ff4d8d', box:'background:#170c19;border:1px solid #4a2045',
+   field:'background:radial-gradient(ellipse at 50% 0%,rgba(255,77,141,.4),transparent 60%),#120a1f;border:7px solid #ff4d8d;box-shadow:0 0 24px rgba(255,77,141,.5)', line:'rgba(255,255,255,.35)'}
+];
+const CH = [
+  {id:'polpetta',   p:0, r:'C', name:'Polpetta Rimbalzina', desc:'Rimbalza ovunque, soprattutto nel sugo.', cheer:'Che polpetta di tiro!'},
+  {id:'gnocco',     p:0, r:'C', name:'Gnocco Pigro',        desc:'Si alza solo per le partite importanti.', cheer:'Mmh… bravo…'},
+  {id:'cornetto',   p:0, r:'C', name:'Cornetto Mattiniero', desc:'Sveglio dalle sei, carico come un caffè.', cheer:'Buongiorno, gol!'},
+  {id:'sushi',      p:0, r:'R', name:'Sushi Ninja',         desc:'Silenzioso, preciso, un po’ crudo.', cheer:'Colpo ninja!'},
+  {id:'gelato',     p:0, r:'R', name:'Gelato Squagliato',   desc:'Tifa fortissimo, finché non si scioglie.', cheer:'Mi sciolgo di gioia!'},
+  {id:'margherita', p:0, r:'L', name:'Re Margherita',       desc:'Il re della tavola. Semplice, ma leggendario.', cheer:'Viva il Re!'},
+  {id:'fantasmino', p:1, r:'C', name:'Fantasmino Timido',   desc:'Tifa di nascosto, ma tifa.', cheer:'Bu… bravo!'},
+  {id:'zombi',      p:1, r:'C', name:'Zombi Ballerino',     desc:'Ha perso un braccio, non il ritmo.', cheer:'Braaavo!'},
+  {id:'occhio',     p:1, r:'C', name:'Occhio Volante',      desc:'Vede ogni pallina. Anche quelle che perdi.', cheer:'Visto tutto!'},
+  {id:'vampiro',    p:1, r:'R', name:'Vampiro Dentista',    desc:'Controlla i denti a tutti gli avversari.', cheer:'Che morso!'},
+  {id:'blob',       p:1, r:'R', name:'Blob Gelatina',       desc:'Ha inghiottito tre monete e un telecomando.', cheer:'Blobbissimo!'},
+  {id:'drago',      p:1, r:'L', name:'Drago Sbadiglio',     desc:'Sputa fuoco solo quando si sveglia.', cheer:'ROAAAR… zzz'},
+  {id:'piccione',   p:2, r:'C', name:'Piccione di Città',   desc:'Conosce tutte le panchine della città.', cheer:'Cru cru!'},
+  {id:'rana',       p:2, r:'C', name:'Rana Salterina',      desc:'Salta di gioia. Letteralmente.', cheer:'Cra-vo!'},
+  {id:'riccio',     p:2, r:'C', name:'Riccio Punk',         desc:'Pungente, ma solo con gli avversari.', cheer:'Rock and riccio!'},
+  {id:'capibara',   p:2, r:'R', name:'Capibara Zen',        desc:'Niente lo agita. Neanche uno 0–3.', cheer:'Tutto bene.'},
+  {id:'polpo',      p:2, r:'R', name:'Polpo Giocoliere',    desc:'Otto braccia, tre palline, zero cadute.', cheer:'Otto volte bravo!'},
+  {id:'unicorno',   p:2, r:'L', name:'Unicorno in Pigiama', desc:'Esiste davvero, ma si sveglia tardi.', cheer:'Magico!'},
+  {id:'nonna',      p:3, r:'C', name:'Nonna Influencer',    desc:'Ha più follower di te. E lo sa.', cheer:'Like!'},
+  {id:'dj',         p:3, r:'C', name:'DJ Tostapane',        desc:'Suona solo musica croccante.', cheer:'Drop!'},
+  {id:'mimo',       p:3, r:'C', name:'Mimo Muto',           desc:'Non dice niente, ma applaude forte.', cheer:'…'},
+  {id:'rocker',     p:3, r:'R', name:'Rocker Cotonato',     desc:'Lacca: tre bombolette al giorno.', cheer:'Yeah!'},
+  {id:'diva',       p:3, r:'R', name:'Diva del Karaoke',    desc:'Canta sopra ogni gol, anche quelli degli altri.', cheer:'Laaa!'},
+  {id:'robo',       p:3, r:'L', name:'Robo-Popstar',        desc:'Programmata per vincere. E per ballare.', cheer:'BIP-BRAVO!'}
+];
+const RAR = {C:{label:'COMUNE', c:'#a9b8cc', dup:5, build:20, val:150}, R:{label:'RARA', c:'#5aa8ff', dup:15, build:60, val:400}, L:{label:'LEGGENDARIA', c:'#ffc94d', dup:50, build:300, val:1500}};
+const ODDS = {pack:{L:.03, R:.22}, Argento:{L:.02, R:.18}, Oro:{L:.06, R:.35}};
+const FIELDS = [{id:'neon', name:'Neon', sw:'background:#0b0f17;border:1px solid #3ff0ff'},
+  {id:'cibo', name:'Pizzeria', sw:'background:repeating-conic-gradient(#7a1e27 0 25%,#4a1218 0 50%) 0 0/12px 12px;border:1px solid #a8703f'},
+  {id:'mostri', name:'Castello', sw:'background:#1a1230;border:1px solid #9d8fc9'},
+  {id:'animali', name:'Giungla', sw:'background:repeating-linear-gradient(90deg,#1f7a3f 0 8px,#238a47 8px 16px);border:1px solid #8fd46a'},
+  {id:'star', name:'Palco', sw:'background:#120a1f;border:1px solid #ff4d8d'}];
+const PACK_GEMS = 40, LEGEND_EUR = 2.99, MISS_EUR = 1.99;
+const ch = id => CH.find(c => c.id === id) || CH[0];
+function rollFig(o){ const x = Math.random(), r = x < o.L ? 'L' : x < o.L + o.R ? 'R' : 'C', l = CH.filter(c => c.r === r); return l[Math.floor(Math.random()*l.length)].id; }
+const chibiHtml = (id, s, dim, cls = '') => `<div class="chibi ${cls}" style="width:${s}px;height:${s}px;${dim ? 'filter:brightness(0);opacity:.35' : ''}">${CHIBI[id] || ''}</div>`;
+const pageHave = p => CH.filter(c => c.p === p && S.owned[c.id] > 0).length;
+// immagini per disegnare i tifosi sul campo di gioco
+const chibiImg = {};
+function chibiImage(id){
+  if(!chibiImg[id]){ const im = new Image(); im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(CHIBI[id]); chibiImg[id] = im; }
+  return chibiImg[id];
+}
+// finestre da mostrare appena si chiude l'animazione in corso (pagina completata, offerte…)
+let PENDING = [];
+function flushPending(){ const l = PENDING; PENDING = []; l.forEach(m => enqueue(m)); }
+function giveFig(r){
+  const n = S.owned[r.id] || 0; S.owned[r.id] = n + 1;
+  if(n){ r.dup = RAR[ch(r.id).r].dup; S.brill += r.dup; } else { r.isNew = true; S.albumNew = true; }
+  if(!S.fan) S.fan = r.id;
+  checkPages();
+}
+function checkPages(){
+  PAGES.forEach((P, p) => {
+    const h = pageHave(p);
+    if(h === 6 && !S.pagesDone[p]){
+      S.pagesDone[p] = 1; S.title = P.titolo;
+      if(S.offers.miss && S.missId && ch(S.missId).p === p) delete S.offers.miss;
+      PENDING.push({title:'Pagina completata!', color:'#ffc94d', lines:['Pagina ' + P.name + ': 6/6', 'Nuovo campo: ' + P.campo, 'Nuovo titolo: «' + P.titolo + '»'], confetti:true, keep:true,
+        primary:{label:'Usa subito il campo', bg:'#ffc94d', fn:() => { S.field = P.id; closeModal(); commit(); }}, secondary:{label:'Dopo', fn:closeModal}});
+    } else if(h === 5 && !S.pagesDone[p] && !offerOn('miss') && !S.missSeen[p]){
+      // "te ne manca solo una": offerta mirata sulla figurina mancante
+      const miss = CH.find(c => c.p === p && !S.owned[c.id]);
+      S.missSeen[p] = 1; S.missId = miss.id; S.offers.miss = Date.now() + 30*60e3; delete S.bought.miss;
+      PENDING.push({title:'Te ne manca solo una!', color:'#ff8fb6', keep:true, lines:['Pagina ' + P.name + ': 5/6', 'Ti manca: ' + miss.name, 'Prendila subito per € ' + eu(MISS_EUR)],
+        note:'Offerta valida 30 minuti.', primary:{label:'Compra · € ' + eu(MISS_EUR), bg:'#ff4d8d', fn:() => { closeModal(); A.offer('miss'); }}, secondary:{label:'No, grazie', fn:closeModal}});
+    }
+  });
+}
+
+// ── schermata Album ──
+function vAlbum(){
+  S.albumNew = false;
+  const p = S.albumPage || 0, P = PAGES[p], inPage = CH.filter(c => c.p === p), have = pageHave(p), done = have === 6;
+  const tot = CH.filter(c => S.owned[c.id] > 0).length, fan = S.fan ? ch(S.fan) : null;
+  return `<div class="col">
+    <div class="hrow"><span class="mi" style="font-size:16px;letter-spacing:.08em">ALBUM</span>
+      <span style="display:flex;align-items:center;gap:10px"><span class="small">Collezione ${tot}/24</span>
+      <span class="pill">${I.sparkle()}${num(S.brill)}</span></span></div>
+    <div class="ptabs">${PAGES.map((q, i) => `<button onclick="A.page(${i})" style="${i === p ? `border-color:${q.accent};background:${q.accent}22;color:${q.accent}` : ''}">${q.name}<span style="font-size:10px;font-weight:600;opacity:.85">${pageHave(i)}/6</span></button>`).join('')}</div>
+    <div style="border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px;${P.box}">
+      <div class="hrow"><span class="mi" style="font-size:16px;color:${P.accent}">${P.name}</span><b style="font-size:13px">${have}/6</b></div>
+      ${have === 5 ? `<div class="pulse" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:10px;border:1px solid #ff4d8d;background:#2a0f1e">
+        <span style="font-size:13px;font-weight:700;color:#ff8fb6">Te ne manca solo una!</span><button class="mbtn" style="background:#ff4d8d;color:#1a0610" onclick="A.fig('${inPage.find(c => !S.owned[c.id]).id}')">Vedi quale</button></div>` : ''}
+      <div class="g3">${inPage.map(c => {
+        const n = S.owned[c.id] || 0, r = RAR[c.r];
+        const frame = n ? `border:2px solid ${r.c};background:#0e131e${c.r === 'L' ? ';box-shadow:0 0 14px rgba(255,201,77,.45)' : ''}` : 'border:1px dashed #2d3749;background:#0a0d14';
+        return `<button class="fig" style="${frame}" onclick="A.fig('${c.id}')" aria-label="${n ? esc(c.name) : 'Figurina mancante'}">${n > 1 ? `<span class="x">x${n}</span>` : ''}
+          <span class="rr" style="color:${r.c}">${r.label}</span><div style="position:relative">${chibiHtml(c.id, 82, !n)}${n ? '' : '<span class="q">?</span>'}</div>
+          <span class="nm">${n ? esc(c.name) : '???'}</span></button>`; }).join('')}</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#c9d3e0">
+        <span style="flex-grow:1">${done ? `Completata! Campo ${P.campo} e titolo «${P.titolo}»` : `Completa la pagina: campo ${P.campo} + titolo «${P.titolo}»`}</span>
+        <button class="smbtn" onclick="A.preview()">Vedi campo</button></div></div>
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:14px;border:1px solid var(--ln);background:var(--p3)">
+      ${fan ? chibiHtml(fan.id, 52, false, 'bob') : '<div style="width:52px;height:52px"></div>'}
+      <div style="flex-grow:1;display:flex;flex-direction:column;gap:2px"><span class="small" style="font-size:11px">Il tuo tifoso</span><b style="font-size:14px">${fan ? esc(fan.name) : 'Nessuno, per ora'}</b></div>
+      ${fan ? `<button class="smbtn" style="border-color:#3ff0ff;color:#3ff0ff" onclick="A.preview()">In partita</button>` : ''}</div>
+    <div class="g2"><button class="bigbtn" style="height:62px;background:#3ff0ff;color:#04161a;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(63,240,255,.35)" onclick="A.pack(false)">
+      <span>Bustina · 3 figurine</span><span style="font-size:12px;font-weight:600">${PACK_GEMS} gemme</span></button>
+      <button class="bigbtn" style="height:62px;background:#ff4d8d;color:#1a0610;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(255,77,141,.35)" onclick="A.pack(true)">
+      <span>Leggenda garantita</span><span style="font-size:12px;font-weight:600">€ ${eu(LEGEND_EUR)}</span></button></div>
+    <span class="small" style="font-size:11px;text-align:center">Probabilità per figurina: comune 75% · rara 22% · leggendaria 3%. I doppioni diventano brillantini.</span>
+  </div>`;
+}
+// ── finestre dell'album (scheda, bustina, anteprima) ──
+let sheetTimers = [];
+function sheetStop(){ sheetTimers.forEach(t => { clearTimeout(t); clearInterval(t); }); sheetTimers = []; }
+function sheet(html){ const el = $('#sheet'); el.innerHTML = `<div class="inner">${html}</div>`; el.classList.remove('hidden'); }
+function closeSheet(){ sheetStop(); $('#sheet').classList.add('hidden'); $('#sheet').innerHTML = ''; render(); flushPending(); }
+function figSheet(id){
+  const c = ch(id), r = RAR[c.r], n = S.owned[id] || 0, isFan = S.fan === id, can = S.brill >= r.build;
+  sheet(`<div class="modal" style="border:2px solid ${r.c};box-shadow:0 0 30px ${r.c}40;align-items:center">
+    <span style="font-size:11px;font-weight:700;letter-spacing:.1em;padding:3px 9px;border-radius:8px;color:${r.c};border:1px solid ${r.c}">${r.label}</span>
+    <div style="width:160px;height:160px;border-radius:80px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,${r.c}33,transparent 70%)">${chibiHtml(id, 150, !n)}</div>
+    <b style="font-size:20px">${n ? esc(c.name) : '???'}</b>
+    <span style="font-size:13px;color:#c9d3e0;line-height:1.4">${n ? esc(c.desc) : 'Non ce l’hai ancora. Si trova nelle bustine e nei bauli.'}</span>
+    <span class="small">${n ? 'Come tifoso grida: «' + esc(c.cheer) + '»' : 'Pagina ' + PAGES[c.p].name}</span>
+    <b style="font-size:12px;color:${n ? '#8d9bb0' : '#ff8fb6'}">${n > 1 ? 'Ne hai ' + n + ' · i doppioni sono diventati brillantini' : n ? 'Ne hai 1' : 'Ti manca'}</b>
+    ${n ? `<button class="bigbtn" style="width:100%;${isFan ? 'background:#1a2130;color:#5b677a' : 'background:#3ff0ff;color:#04161a'}" ${isFan ? 'disabled' : ''} id="shFan">${isFan ? 'È il tuo tifoso' : 'Scegli come tifoso'}</button>`
+       : `<button class="bigbtn" style="width:100%;${can ? 'background:#e7b8ff;color:#1a0f24' : 'background:#1f2735;color:#a9b8cc'}" id="shBuild">Costruisci · ${r.build} brillantini</button>`}
+    <button class="btn2" style="width:100%" id="shX">Chiudi</button></div>`);
+  $('#shX').onclick = closeSheet;
+  if($('#shFan')) $('#shFan').onclick = () => { S.fan = id; save(); figSheet(id); };
+  if($('#shBuild')) $('#shBuild').onclick = () => {
+    if(S.brill < r.build) return openModal({title:'Brillantini insufficienti', color:'#ff8fb6', lines:['Ti servono ' + r.build + ' brillantini, ne hai ' + S.brill + '.'],
+      note:'I brillantini arrivano dai doppioni. Oppure…', primary:{label:'Compra una bustina', bg:'#3ff0ff', fn:() => { closeModal(); A.pack(false); }}, secondary:{label:'Annulla', fn:closeModal}});
+    S.brill -= r.build; giveFig({t:'fig', id}); S.albumPage = c.p; save(); figSheet(id); render();
+  };
+}
+function packSheet(paid){
+  const ids = [rollFig(ODDS.pack), rollFig(ODDS.pack), paid ? rollFig({L:1, R:0}) : rollFig(ODDS.pack)];
+  const list = ids.map(id => ({t:'fig', id}));
+  list.forEach(giveFig);   // le bustine si pagano: non contano nel grafico dei premi del gioco
+  save();
+  const col = paid ? '#ffc94d' : '#3ff0ff';
+  sheet(`<div style="display:flex;flex-direction:column;align-items:center;gap:18px;width:100%">
+    <span class="mi" style="font-size:17px;color:${col}">${paid ? 'Leggenda garantita' : 'Bustina'}</span>
+    <div class="g3" style="width:100%" id="pkRow">${list.map((r, i) => `<button class="pk pkback" data-i="${i}" aria-label="Gira la figurina"><span class="mi" style="font-size:13px;letter-spacing:.12em">PONG</span>
+      <span class="mi" style="font-size:8px;letter-spacing:.4em;color:#ff4d8d">ARENA</span><span style="font-size:10px;color:#8d9bb0;margin-top:14px">tocca</span></button>`).join('')}</div>
+    <button class="bigbtn hidden" id="pkOk" style="width:100%;background:#3ff0ff;color:#04161a">Nell'album!</button>
+    <button class="btn2" id="pkAll" style="width:100%">Girale tutte</button></div>`);
+  let shown = 0;
+  const flip = i => {
+    const b = document.querySelector(`#pkRow [data-i="${i}"]`); if(!b) return;
+    const r = list[i], c = ch(r.id), rr = RAR[c.r];
+    const d = document.createElement('div'); d.className = 'pk flip';
+    d.style.cssText = `background:#0e131e;border:2px solid ${rr.c};${c.r === 'L' ? 'box-shadow:0 0 22px rgba(255,201,77,.6)' : ''}`;
+    d.innerHTML = `<span style="font-size:9px;font-weight:700;letter-spacing:.08em;color:${rr.c}">${rr.label}</span>${chibiHtml(r.id, 86)}
+      <span style="font-size:11px;font-weight:700;text-align:center;line-height:1.15">${esc(c.name)}</span>
+      <span style="font-size:11px;font-weight:700;text-align:center;line-height:1.15;color:${r.isNew ? '#5dffa0' : '#e7b8ff'}">${r.isNew ? 'NUOVA!' : 'Doppione +' + r.dup + ' brillantini'}</span>`;
+    b.replaceWith(d); shown++; buzz(c.r === 'L' ? [30, 40, 60] : 15);
+    if(shown >= 3){ $('#pkOk').classList.remove('hidden'); $('#pkAll').classList.add('hidden'); }
+  };
+  document.querySelectorAll('#pkRow [data-i]').forEach(b => b.onclick = () => flip(+b.dataset.i));
+  [700, 1300, 1900].forEach((ms, i) => sheetTimers.push(setTimeout(() => flip(i), ms)));
+  $('#pkAll').onclick = () => { sheetStop(); [0, 1, 2].forEach(flip); };
+  $('#pkOk').onclick = () => { S.albumPage = ch(list[2].id).p; closeSheet(); };
+}
+function previewSheet(){
+  const p = S.albumPage || 0, P = PAGES[p], done = !!S.pagesDone[p], fan = S.fan ? ch(S.fan) : null;
+  const extra = p === 1 ? `<svg width="90" height="90" viewBox="0 0 90 90" style="position:absolute;right:0;top:0"><path d="M90 0L30 0M90 0L90 60M90 0L40 40M90 0L60 12M90 0L78 30" stroke="#9d8fc9" stroke-width="1.5" opacity=".7" fill="none"/><path d="M44 0q6 8 14 8M68 0q2 10 22 12M58 8q8 8 20 22M72 20q8 2 18 0M38 20q10 2 18-6M50 32q14 0 22-12M62 44q10-4 18-20" stroke="#9d8fc9" stroke-width="1.2" opacity=".6" fill="none"/></svg>`
+    : p === 2 ? `<svg width="290" height="60" viewBox="0 0 290 60" style="position:absolute;left:0;top:0"><path d="M0 0q30 40 60 10q30 30 70 4q40 36 80 6q40 30 80 0" stroke="#3fbf5a" stroke-width="5" fill="none"/><path d="M60 10l-6 12 12-4zM130 14l-4 12 10-6zM210 10l-6 12 12-4z" fill="#5dd65a"/></svg>` : '';
+  const lights = p === 3 ? `<div style="position:absolute;left:20px;top:0;width:80px;height:260px;background:linear-gradient(180deg,rgba(255,77,141,.35),rgba(255,77,141,0));clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);transform:rotate(-14deg)"></div>
+    <div style="position:absolute;right:20px;top:0;width:80px;height:260px;background:linear-gradient(180deg,rgba(63,240,255,.35),rgba(63,240,255,0));clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);transform:rotate(14deg)"></div>` : '';
+  sheet(`<div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;background:#05070b;border-radius:16px;padding:14px 10px">
+    <div class="hrow" style="width:100%"><div style="display:flex;flex-direction:column;gap:2px"><span class="mi" style="font-size:14px;color:${P.accent}">Campo ${P.campo}</span>
+      <span style="font-size:11px;color:${done ? '#5dffa0' : '#8d9bb0'}">${done ? (S.field === P.id ? 'In uso' : 'Sbloccato') : 'Anteprima · si sblocca completando la pagina ' + P.name}</span></div>
+      <button class="smbtn" id="pvX">Chiudi</button></div>
+    <div style="position:relative;width:340px;max-width:100%;height:440px">
+      <div style="position:absolute;left:25px;top:10px;width:290px;height:380px;border-radius:10px;box-sizing:border-box;transform:perspective(700px) rotateX(38deg);transform-origin:50% 100%;overflow:hidden;${P.field}">
+        <div style="position:absolute;left:0;right:0;top:50%;border-top:3px dashed ${P.line}"></div>
+        <div style="position:absolute;left:110px;top:18px;width:70px;height:12px;border-radius:6px;background:#ff4d8d;box-shadow:0 0 12px #ff4d8d"></div>
+        <div style="position:absolute;left:150px;top:150px;width:16px;height:16px;border-radius:8px;background:#fff;box-shadow:0 0 12px #fff"></div>
+        <div style="position:absolute;left:100px;bottom:18px;width:90px;height:14px;border-radius:7px;background:#3ff0ff;box-shadow:0 0 14px #3ff0ff"></div>${extra}</div>${lights}
+      <div style="position:absolute;left:0;bottom:0;width:96px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end">
+        <div id="pvBub"></div><div id="pvFan">${fan ? chibiHtml(fan.id, 86, false, 'bob') : ''}</div>
+        <div style="width:70px;height:10px;border-radius:50%;background:${P.accent};opacity:.35"></div></div></div>
+    ${fan ? `<div class="g2" style="width:100%"><button class="bigbtn" style="background:#3ff0ff;color:#04161a;font-size:14px" id="pvG">Simula: segni tu</button>
+      <button class="bigbtn" style="border:1px solid #ff4d8d;color:#ff8fb6;font-size:14px" id="pvS">Simula: subisci</button></div>` : '<span class="small">Trova una figurina per avere un tifoso.</span>'}
+    ${done && S.field !== P.id ? `<button class="bigbtn" style="width:100%;background:#ffc94d;color:#1a1405" id="pvUse">Usa questo campo in partita</button>` : ''}
+  </div>`);
+  $('#pvX').onclick = closeSheet;
+  const react = mood => {
+    sheetStop();
+    $('#pvFan').innerHTML = chibiHtml(fan.id, 86, false, mood);
+    $('#pvBub').innerHTML = `<div class="bubble" style="position:absolute;left:62px;top:-6px;white-space:nowrap;padding:6px 10px;border-radius:12px;background:#fff;color:#1a1024;font-size:13px;font-weight:700">${esc(mood === 'cheer' ? fan.cheer : 'Nooo!')}</div>`;
+    sheetTimers.push(setTimeout(() => { $('#pvFan').innerHTML = chibiHtml(fan.id, 86, false, 'bob'); $('#pvBub').innerHTML = ''; }, 1700));
+  };
+  if($('#pvG')){ $('#pvG').onclick = () => react('cheer'); $('#pvS').onclick = () => react('sad'); }
+  if($('#pvUse')) $('#pvUse').onclick = () => { S.field = P.id; save(); previewSheet(); };
+}
 // ════════════════ PARTITA: tu contro la CPU, visuale 3D dal tuo lato ════════════════
 const gcv = $('#gcv'), gctx = gcv.getContext('2d');
 const CTRL = .27;
@@ -1064,7 +1383,7 @@ function startMatch(){
   const lv = S.bar.lvl, cp = CPU[phase()];
   Object.assign(G, {on:true, ph:'cd', phEnd:0, sc:[0, 0], ball:{x:FW/2, y:FH/2, vx:0, vy:0}, pend:{vx:0, vy:0},
     myY:FH/2, myT:FH/2, cpuY:FH/2, cpuErr:0, len:PL*(1 + LEN[lv]/100), maxV:BASE_V*(1 + SPD[lv]/100),
-    power:{have:lv >= 3, armed:false, used:false}, cpu:cp, fx:[], goalT:-1e9, flashT:-1e9, trail:[], acc:0, last:performance.now(), overT:0, win:false, keys:{}});
+    power:{have:lv >= 3, armed:false, used:false}, cpu:cp, fx:[], goalT:-1e9, fanMood:'', fanT:-1e9, flashT:-1e9, trail:[], acc:0, last:performance.now(), overT:0, win:false, keys:{}});
   pad = {id:null, lx:0, finger:null, touched:false};
   G.paused = false; $('#gPauseBox').classList.add('hidden');
   goFull();
@@ -1096,6 +1415,7 @@ function bounce(side, py, len, dir, now){
 function point(side, now){
   G.sc[side === 'L' ? 0 : 1]++;
   if(side === 'L'){ G.goalT = now; buzz([30, 50, 30]); } else buzz([20, 40, 20]);
+  G.fanMood = side === 'L' ? 'cheer' : 'sad'; G.fanT = now;
   if(G.sc[0] >= WIN || G.sc[1] >= WIN){ G.ph = 'over'; G.win = G.sc[0] >= WIN; G.overT = now; G.ball.vx = G.ball.vy = 0; return; }
   serve(side === 'L' ? 1 : -1, 1200);
 }
@@ -1175,7 +1495,7 @@ function gDraw(now){
   c.fillStyle = '#05070b'; c.fillRect(0, 0, W, H);
   const trail = S.eq.scia === 't_none' || G.ph !== 'play' ? [] : G.trail;
   G.f3.draw(c, {ball:G.ph === 'over' ? null : G.ball, trail, trailCol:TRAILS[S.eq.scia], myY:G.myY, oppY:G.cpuY, showOpp:true, ph:G.ph,
-    mySkin:skinTexId(S.eq.skin), oppSkin:'base', myLen:G.len, oppLen:G.cpu.len,
+    theme:S.field || 'neon', mySkin:skinTexId(S.eq.skin), oppSkin:'base', myLen:G.len, oppLen:G.cpu.len,
     cd:G.paused ? 0 : G.phEnd - now, hint:G.sc[0] + G.sc[1] === 0 ? 'Usa il touchpad qui sotto per muovere la barra' : '',
     msg:G.ph === 'over' ? [G.win ? 'HAI VINTO!' : 'HAI PERSO', G.sc[0] + ' – ' + G.sc[1]] : null}, now);
   drawFx(c, now);
@@ -1201,9 +1521,34 @@ function gDraw(now){
   c.strokeStyle = !P.have || P.used ? '#2a3040' : '#ffc94d'; c.lineWidth = 1.5; c.stroke();
   c.fillStyle = !P.have || P.used ? '#5b6275' : P.armed ? '#1a1405' : '#ffc94d'; c.font = `700 ${Math.round(Math.min(W*.03, 12))}px "Chakra Petch", sans-serif`;
   c.fillText(label, b.x + b.w/2, b.y + b.h/2 + 1);
+  drawFan(c, now, px, py);
   c.font = `500 ${Math.round(Math.min(W*.034, 13))}px system-ui,sans-serif`;
   c.fillStyle = pad.touched ? '#6e7589' : `rgba(230,233,240,${.55 + .35*Math.sin(now/400)})`;
   c.fillText(pad.touched ? 'appoggia il dito e trascina' : 'Appoggia qui il dito e trascina', W/2, H - 12 - V.sB);
+}
+// tifoso: sta a bordo campo (in alto a sinistra del touchpad) ed esulta ai tuoi gol
+function drawFan(c, now, px, py){
+  if(!S.fan) return;
+  const im = chibiImage(S.fan), f = ch(S.fan), s = Math.min(64, V.w*.16), t = (now - G.fanT)/1000;
+  let dy = Math.sin(now/350)*3, rot = Math.sin(now/700)*.06, sc = 1;
+  if(G.fanMood === 'cheer' && t < 1.2){ dy = -Math.abs(Math.sin(t*Math.PI*2.5))*s*.45; rot = Math.sin(t*14)*.15; sc = 1.08; }
+  else if(G.fanMood === 'sad' && t < 1.2){ dy = 4; rot = Math.sin(t*10)*.1; sc = .94; }
+  const cx = px + 12 + s/2, by = py + 8 + s;
+  c.save(); c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(cx, by, s*.32, s*.07, 0, 0, Math.PI*2); c.fill();
+  c.translate(cx, by + dy); c.rotate(rot); c.scale(sc, sc);
+  if(im.complete && im.naturalWidth) c.drawImage(im, -s/2, -s, s, s);
+  c.restore();
+  if(G.fanMood && t < 1.6){
+    const txt = G.fanMood === 'cheer' ? f.cheer : 'Nooo!', a = t < .2 ? t/.2 : t > 1.3 ? (1.6 - t)/.3 : 1;
+    c.save(); c.globalAlpha = a; c.font = `700 ${Math.round(Math.min(V.w*.036, 14))}px "Chakra Petch", sans-serif`;
+    const tw = c.measureText(txt).width + 18, bx = cx + s*.35, byy = py + 10;
+    c.fillStyle = '#fff'; rr(c, bx, byy, tw, 26, 12); c.fill();
+    c.fillStyle = '#1a1024'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText(txt, bx + 9, byy + 14);
+    if(G.fanMood === 'cheer' && f.r === 'L'){   // i leggendari esultano con le scintille
+      for(let i = 0; i < 10; i++){ const an = i/10*Math.PI*2 + t*3, r = s*(.5 + t*.6);
+        c.fillStyle = i % 2 ? '#ffc94d' : '#fff6b0'; c.beginPath(); c.arc(cx + Math.cos(an)*r, by - s/2 + Math.sin(an)*r*.7, 3, 0, Math.PI*2); c.fill(); } }
+    c.restore();
+  }
 }
 const inPw = (x, y) => V && x >= V.pw.x && x <= V.pw.x + V.pw.w && y >= V.pw.y && y <= V.pw.y + V.pw.h;
 function armPower(){ const P = G.power; if(P.have && !P.used && !P.armed){ P.armed = true; buzz(20); } }
@@ -1283,8 +1628,9 @@ function endMatch(quit){
     secondary:hard ? {label:'Continua', fn:closeModal} : null});
   for(const [l, r] of ups) enqueue({title:'LIVELLO ' + l + '!', color:'#3ff0ff', lines:r.map(rlabel), confetti:true, keep:true, primary:{label:'Evviva!', fn:closeModal}});
   for(const [t, r] of roads) enqueue({title:'Traguardo ' + t + ' trofei', color:'#ffc94d', lines:[rlabel(r)], keep:true, primary:{label:'Fantastico!', fn:closeModal}});
+  flushPending();
   if(offer){ const o = OFFERS[offer]; enqueue({title:offer === 'boost' ? 'Sei bloccato?' : 'Offerta speciale!', color:'#ff8fb6', keep:true,
-    lines:[o.title, o.desc, '€ ' + eu(o.price) + ' invece di € ' + eu(o.was)], note:'Solo per i prossimi ' + (o.min >= 60 ? o.min/60 + ' ore' : o.min + ' minuti') + '.',
+    lines:[o.title, o.desc, '€ ' + eu(o.price) + (o.was ? ' invece di € ' + eu(o.was) : '')], note:'Solo per i prossimi ' + (o.min >= 60 ? o.min/60 + ' ore' : o.min + ' minuti') + '.',
     primary:{label:'Compra · € ' + eu(o.price), bg:'#ff4d8d', fn:() => { closeModal(); A.offer(offer); }}, secondary:{label:'No, grazie', fn:closeModal}}); }
 }
 
